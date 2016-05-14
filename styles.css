@@ -19,8 +19,8 @@ p, div {
 #battery-shell {
   margin:auto;
   background-color:#eee;
-  width:175px;
-  height:270px;
+  width:150px;
+  height:250px;
   border-radius:8px;
   position: relative;
   box-shadow: 0 14px 24px 8px rgba(0, 0, 0, .30);
@@ -29,7 +29,7 @@ p, div {
 #battery-shell:before {
   content:'';
   margin-top:-17px;
-  left:30%;
+  left:24%;
   position:absolute;
   display:block;
   width:80px;
@@ -40,7 +40,7 @@ p, div {
 
 #battery-fill {
   position: absolute;
-  width:175px;
+  width:150px;
   height:2%;
   bottom:0px;
   border-radius:8px;
@@ -52,9 +52,9 @@ p, div {
 }
 #charge {
   position: absolute;
-  width:100px;
-  margin:-28%;
-  margin-top:40%;
+  width:80px;
+  margin:-30%;
+  margin-top:47%;
   z-index: 999;
 }
 .title {
@@ -85,6 +85,7 @@ a {
 }
 .buttons {
   margin-top: 20px;
+  margin-bottom: 10px;
   cursor: pointer;
 }
 .btn {
