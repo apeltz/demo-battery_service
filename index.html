@@ -1,0 +1,44 @@
+<DOCTYPE html>
+  <html>
+    <meta charset="utf-8">
+    <head>
+        <meta charset="utf-8">
+        <title>Battery Service</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.3/jquery.min.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/velocity/1.2.3/velocity.min.js"></script>
+        <link href='https://fonts.googleapis.com/css?family=Raleway:400,100,200,300,500,600' rel='stylesheet' type='text/css'>
+        <link rel="stylesheet" href="styles.css">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+      </head>
+    <body class="loading">
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-6 col-lg-offset-3 text-center">
+            <h2 class="title">Web-Bluetooth Battery: Service Demo</h2>
+            <p class="subtitle">A Javascript Library for Bluetooth Low Energy Devices.</p>
+            <div class="buttons">
+              <button class="btn connect" id="connect">Connect</button>
+              <button class="btn disconnect" id="disconnect" disabled>Disconnect</button>
+            </div>
+            <div id="load">
+              <img id="loading-indicator" src="assets/loading.gif">
+              <p>Connecting...</p>
+              <a href=""><p id="cancel">Cancel</p></a>
+            </div>
+            <div id="battery-parent">
+                <div id="battery-shell">
+                  <img id="charge" src="assets/charge.svg">
+                  <div id="battery-fill">
+                  </div>
+                </div>
+            </div>
+            <footer class="footer">For more information, visit <a href="http://sabertooth-io.github.io/">sabertooth-io.github.io</a></footer>
+          </div>
+         </div>
+      </div>
+      <script src="client-js.js"></script>
+    </body>
+  </html>
