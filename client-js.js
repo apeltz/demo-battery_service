@@ -1,7 +1,6 @@
 // import bluetooth from ('web-bluetooth');
 
-$(window).load(function() {
-  console.log(bluetooth);
+$(window).load(function() {  
   batteryFill();
 });
 
