@@ -77,6 +77,7 @@ a {
 #load {
   margin-top: 30px;
   display:none;
+  color:#fff;
 }
 #loading-indicator {
   width: 50px;
@@ -84,7 +85,7 @@ a {
   margin-bottom: 10px;
 }
 .buttons {
-  margin-top: 20px;
+  margin-top: 12px;
   margin-bottom: 10px;
   cursor: pointer;
 }

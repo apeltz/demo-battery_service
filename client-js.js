@@ -1,6 +1,6 @@
 // import bluetooth from ('web-bluetooth');
 
-$(window).load(function() {  
+$(window).load(function() {
   batteryFill();
 });
 
@@ -26,7 +26,7 @@ $('#cancel').on('click', event => {
 });
 
 function batteryFill() {
-  $('#battery-fill').animate({
+  $('#battery-fill').velocity({
     height: "50%"
   },{
     duration:1000,
