@@ -1,4 +1,4 @@
-// import bluetooth from ('web-bluetooth');
+// const bluetooth = import 'web-bluetooth';
 
 $(window).load(function() {
   batteryFill();
@@ -6,11 +6,8 @@ $(window).load(function() {
 
 $('#connect').on('touchstart click', (event) => {
   $('#load').show();
-
-  // $('#loading').show();
-  // $('#title').prepend('<p id="cancel">Cancel</p>');
   // eddy1.discoverConnect("SAMSUNG-SM-G925A", null, null).then(device => {
-  //   $('#loading').hide();
+    $('#loading').hide();
   //   $('#status').text('Connected!');
   //   $('#disconnect').prop('disabled',false);
   //   // console.log('Connected from app.js', device);

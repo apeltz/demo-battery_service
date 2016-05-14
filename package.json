@@ -12,6 +12,6 @@
   "license": "ISC",
   "dependencies": {
     "express": "^4.13.4",
-    "web-bluetooth": "0.0.2"
+    "web-bluetooth": "0.0.10"
   }
 }

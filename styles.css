@@ -37,7 +37,6 @@ p, div {
   border-radius:8px;
   background-color:#eee;
 }
-
 #battery-fill {
   position: absolute;
   width:150px;
@@ -46,6 +45,7 @@ p, div {
   border-radius:8px;
   background-color:#6FEA08;
   box-shadow:  0 0 10px rgba(255,255,255,1) , 0 0 20px rgba(255,255,255,1) , 0 0 30px rgba(255,255,255,1) , 0 0 40px #6FEA08 , 0 0 70px #6FEA08 , 0 0 80px #6FEA08 , 0 0 100px #ff00de ;
+  -webkit-transform: translateZ(0);
 }
 #battery-level {
   margin-top:100%;
@@ -53,7 +53,7 @@ p, div {
 #charge {
   position: absolute;
   width:80px;
-  margin:-30%;
+  margin:-28%;
   margin-top:47%;
   z-index: 999;
 }
