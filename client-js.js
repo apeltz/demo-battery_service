@@ -27,7 +27,7 @@ function batteryFill() {
     height: "50%"
   },{
     duration:1000,
-    easing:'easeOutBounce'
+    easing:'linear'
   })
 }
 
