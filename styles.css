@@ -130,10 +130,14 @@ a {
 .btn:focus,.btn:active {
    outline: none !important;
 }
+#getvalue {
+  background: blue;
+  display:none;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, .20);
+}
 #disconnect {
   background: red;
   display:none;
-  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, .20);;
 }
 .btnDisconnect:hover {
   color: white;
