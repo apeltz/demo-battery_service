@@ -229,7 +229,7 @@ class Device {
 				return characteristicObj.parseValue(value.getUint8(0));
 			})
 			.catch(err => {
-				console.log('error',err);				
+				console.log('error',err);
 				// errorHandler('disconnect_error', {}, err);
 			})
 		}

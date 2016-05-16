@@ -1,6 +1,9 @@
 var percentage = 30;
-var blue = new Device({services: ['battery_service']});
-
+// var blue = new Device({services: ['battery_service']});
+var blue = new Device({
+  namePrefix: 'Dan'
+  //services: ['battery_service']
+});
 // $(window).load(function() {
 //
 // });
@@ -22,6 +25,8 @@ $('#disconnect').on('touchstart click', (event) => {
       $('#connect').show();
       $('#disconnect').hide();
       $('#getvalue').hide();
+      $('#level').text('');
+      batteryFill(0);
     }
     else {
       $('#status').text('Disconnect failed!');
@@ -36,7 +41,7 @@ $('#getvalue').on('touchstart click', (event) => {
     batteryFill(value);
   })
   .catch(error => {
-    $('#footer').prepend(`Error! ${error}`);
+    // $('#footer').prepend(`Error! ${error}`);
   })
 });
 
