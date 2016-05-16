@@ -1,27 +1,43 @@
-// const bluetooth = import 'web-bluetooth';
 var percentage = 30;
-$(window).load(function() {
+var blue = new Device({services: ['battery_service']});
 
-//const blue = new Bluetooth();
-
-});
+// $(window).load(function() {
+//
+// });
 
 $('#connect').on('touchstart click', (event) => {
     $('#load').show();
-    var blue = Bluetooth.acquire({services: ['battery_service']})
-    blue.getValue('battery_level')
-    .then(value => {
+    blue.connect().then(device => {
       $('#load').hide();
-      $('#connect').prop('disabled','true');
+      $('#connect').hide();
+      $('#getvalue').show();
+      $('#disconnect').show();
       $('#status').text('Connected!');
-      $('#level').text(`${level}%`);
-      percentage = value;
-      batteryFill();
-    })
-    .catch(error => {
-      $('#load').hide();
-      $('#footer').prepend(`Error! ${error}`);
-    })
+    });
+});
+
+$('#disconnect').on('touchstart click', (event) => {
+    if (blue.disconnect()) {
+      $('#status').text('Disconnected!');
+      $('#connect').show();
+      $('#disconnect').hide();
+      $('#getvalue').hide();
+    }
+    else {
+      $('#status').text('Disconnect failed!');
+    }
+});
+
+$('#getvalue').on('touchstart click', (event) => {
+  blue.getValue('battery_level')
+  .then(value => {
+    $('#level').text(`${value}%`);
+    //percentage = value;
+    batteryFill(value);
+  })
+  .catch(error => {
+    $('#footer').prepend(`Error! ${error}`);
+  })
 });
 
 //TODO: handling for disconnect
@@ -32,6 +48,8 @@ $('#cancel').on('click', event => {
   $('#disconnect').hide();
   if (blue.disconnect()) $('#status').text('Not connected');
 });
+
+// $('#disconnect');
 
 
 function batteryFill(percentage) {

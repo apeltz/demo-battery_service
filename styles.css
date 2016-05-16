@@ -40,16 +40,11 @@ p, div {
 #battery-fill {
   position: absolute;
   width:150px;
-  height:2%;
+  height:0%;
   bottom:0px;
   border-radius:8px;
   background-color:#6FEA08;
   box-shadow:  0 0 10px rgba(255,255,255,1) , 0 0 20px rgba(255,255,255,1) , 0 0 30px rgba(255,255,255,1) , 0 0 40px #6FEA08 , 0 0 70px #6FEA08 , 0 0 80px #6FEA08 , 0 0 100px #ff00de ;
-}
-
-.battery-transition {
-  height:30%:
-  transition: height 500ms ease-in-out;
 }
 
 #battery-level {
@@ -135,10 +130,16 @@ a {
 .btn:focus,.btn:active {
    outline: none !important;
 }
+#getvalue {
+  color:#fff;
+  background: blue;
+  display:none;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, .20);
+}
 #disconnect {
+  color:#fff;
   background: red;
   display:none;
-  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, .20);;
 }
 .btnDisconnect:hover {
   color: white;
@@ -149,5 +150,9 @@ a {
 }
 #status {
   padding:10px;
+  color:#fff;
+}
+#status-level {
+  padding:4px;
   color:#fff;
 }
