@@ -36,7 +36,6 @@ $('#getvalue').on('touchstart click', (event) => {
     batteryFill(value);
   })
   .catch(error => {
-    $('#load').hide();
     $('#footer').prepend(`Error! ${error}`);
   })
 });
