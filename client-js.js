@@ -1,28 +1,30 @@
 // const bluetooth = import 'web-bluetooth';
+var percentage = 30;
+$(window).load(function() {
 
 //const blue = new Bluetooth();
 
-$(window).load(function() {
-  batteryFill(50);
 });
 
 $('#connect').on('touchstart click', (event) => {
-  $('#load').show();
-  $('#connect').prop('disabled','true');
-  // $('#disconnect').show();
-  let level = 30;
-  $('#level').text(`${level}%`);
-  // blue.acquire("SAMSUNG-SM-G925A", null, null).then(device => {
-    //$('#load').hide();
-  //   $('#status').text('Connected!');
-    // $('#buttons').append('<p>Connected!</p>');
-  //   // console.log('Connected from app.js', device);
-  // }).catch(err => {
-  //   console.log(err);
-  //   $('#load').hide();
-  // });
+    $('#load').show();
+    var blue = Bluetooth.acquire({services: ['battery_service']})
+    blue.getValue('battery_level')
+    .then(value => {
+      $('#load').hide();
+      $('#connect').prop('disabled','true');
+      $('#status').text('Connected!');
+      $('#level').text(`${level}%`);
+      percentage = value;
+      batteryFill();
+    })
+    .catch(error => {
+      $('#load').hide();
+      $('#footer').prepend(`Error! ${error}`);
+    })
 });
 
+//TODO: handling for disconnect
 $('#cancel').on('click', event => {
   event.preventDefault();
   $('#load').hide();
@@ -30,6 +32,7 @@ $('#cancel').on('click', event => {
   $('#disconnect').hide();
   if (blue.disconnect()) $('#status').text('Not connected');
 });
+
 
 function batteryFill(percentage) {
   $('#battery-fill').velocity({
@@ -39,8 +42,4 @@ function batteryFill(percentage) {
     easing:'linear'
   });
   // $('#battery-fill').addClass('battery-transition');
-}
-
-function loading() {
-
 }
