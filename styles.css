@@ -131,11 +131,13 @@ a {
    outline: none !important;
 }
 #getvalue {
+  color:#fff;
   background: blue;
   display:none;
   box-shadow: 0 4px 8px 0 rgba(0, 0, 0, .20);
 }
 #disconnect {
+  color:#fff;
   background: red;
   display:none;
 }
