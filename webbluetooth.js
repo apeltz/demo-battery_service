@@ -213,23 +213,27 @@ class Device {
 			 *       to characteristic, if multiple exist e.g. 'sensor_location'...
 			 *       or add functionality at device connection to filter primary
 			 *       services based on only those available to device
-			 */			 
+			 */
 			return this.apiServer.getPrimaryService('battery_service')
 			.then(service => {
 				console.log('service',service);
+				$('#status').text(`service ${service}`);
 				return service.getCharacteristic(characteristicName);
 			})
 			.then(characteristic => {
 				console.log('char',characteristic);
+				$('#status').text(`characteristic ${characteristic}`);
 				return characteristic.readValue();
 			})
 			.then(value => {
 				console.log('value',value);
+				$('#status').text(`value ${value}`);
 				if (!characteristicObj.parseValue) return value.getUint8(0)
 				return characteristicObj.parseValue(value.getUint8(0));
 			})
 			.catch(err => {
 				console.log('error',err);
+				$('#status').text(`err ${err}`);
 				// errorHandler('disconnect_error', {}, err);
 			})
 		}

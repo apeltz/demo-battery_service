@@ -31,7 +31,7 @@ $('#disconnect').on('touchstart click', (event) => {
 $('#getvalue').on('touchstart click', (event) => {
   blue.getValue('battery_level')
   .then(value => {
-    $('#level').text(`${valuel}%`);
+    $('#level').text(`${value}%`);
     //percentage = value;
     batteryFill(value);
   })
