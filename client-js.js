@@ -1,36 +1,38 @@
 // const bluetooth = import 'web-bluetooth';
-
+var batteryLevel = 30;
 $(window).load(function() {
-  batteryFill();
+  // batteryFill();
 });
 
 $('#connect').on('touchstart click', (event) => {
   $('#load').show();
-  // eddy1.discoverConnect("SAMSUNG-SM-G925A", null, null).then(device => {
-    $('#loading').hide();
-  //   $('#status').text('Connected!');
-  //   $('#disconnect').prop('disabled',false);
-  //   // console.log('Connected from app.js', device);
-  // }).catch(err => {
-  //   console.log(err);
-  //   $('#loading').hide();
-  // });
+    var exampleDevice = Bluetooth.acquire({services: ['battery_service']})
+    exampleDevice.getValue('battery_level')
+    .then(value => {
+      $('#load').hide();
+      $('#status').text('Connected!');
+      batteryLevel = value;
+      batteryFill();
+    })
+    .catch(error => {
+      $('#load').hide();
+      $('#footer').prepend(`Error! ${error}`);
+    })
 });
 
+//TODO: handling for disconnect
 $('#cancel').on('click', event => {
-  event.preventDefault();
-  if (eddy1.disconnect()) $('#status').text('Not connected');
+  // event.preventDefault();
+  // exampleDevice.disconnect().then(...)
+  // $('#status').text('Not connected');
 });
 
 function batteryFill() {
+  console.log(''+{batteryLevel}+'%')
   $('#battery-fill').velocity({
-    height: "50%"
+    height: ''+batteryLevel+'%'
   },{
     duration:1000,
     easing:'linear'
   })
-}
-
-function loading() {
-
 }
