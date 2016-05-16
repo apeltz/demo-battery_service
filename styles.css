@@ -47,11 +47,6 @@ p, div {
   box-shadow:  0 0 10px rgba(255,255,255,1) , 0 0 20px rgba(255,255,255,1) , 0 0 30px rgba(255,255,255,1) , 0 0 40px #6FEA08 , 0 0 70px #6FEA08 , 0 0 80px #6FEA08 , 0 0 100px #ff00de ;
 }
 
-.battery-transition {
-  height:30%:
-  transition: height 500ms ease-in-out;
-}
-
 #battery-level {
   margin-top:100%;
 }

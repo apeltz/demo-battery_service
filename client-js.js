@@ -12,7 +12,12 @@ $('#connect').on('touchstart click', (event) => {
   // $('#disconnect').show();
   let level = 30;
   $('#level').text(`${level}%`);
-  // blue.acquire("SAMSUNG-SM-G925A", null, null).then(device => {
+  blue.acquire({
+        name:"SAMSUNG-SM-G925A",
+        uuid: null,
+        service: null }).then(device => {
+          device.connect();
+        });
     //$('#load').hide();
   //   $('#status').text('Connected!');
     // $('#buttons').append('<p>Connected!</p>');
@@ -21,6 +26,7 @@ $('#connect').on('touchstart click', (event) => {
   //   console.log(err);
   //   $('#load').hide();
   // });
+
 });
 
 $('#cancel').on('click', event => {
@@ -31,6 +37,8 @@ $('#cancel').on('click', event => {
   if (blue.disconnect()) $('#status').text('Not connected');
 });
 
+// $('#disconnect');
+
 function batteryFill(percentage) {
   $('#battery-fill').velocity({
     height: `${percentage}%`
@@ -39,8 +47,4 @@ function batteryFill(percentage) {
     easing:'linear'
   });
   // $('#battery-fill').addClass('battery-transition');
-}
-
-function loading() {
-
 }
