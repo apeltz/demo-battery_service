@@ -9,6 +9,7 @@ var blue = new Device({services: ['battery_service']});
 $('#connect').on('touchstart click', (event) => {
     $('#load').show();
     blue.connect().then(device => {
+      console.log('connected',device);
       $('#load').hide();
       $('#connect').hide();
       $('#getvalue').show();
