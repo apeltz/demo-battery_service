@@ -7,20 +7,25 @@ var blue;
 // });
 
 $('#connect').on('touchstart click', (event) => {
-  var serviceObj = {service: $('#serviceFilter').val()};
-  var nameObj = {name: $('#nameFilter').val()};
-  var prefixObj = {namePrefix: $('#prefixFilter').val()};
+  var services = $('#serviceFilter').val();
+  var name = $('#nameFilter').val();
+  var prefix = $('#prefixFilter').val();
   var filterObj = {}
   // moved here to populate from filters rather than on page load
-    blue = new Device({services: ['battery_service']}).then( server => {
-      server.connect().then(device => {
-        $('#load').hide();
-        $('#connect').hide();
-        $('#getvalue').show();
-        $('#disconnect').show();
-        $('#status').text('Connected!');
-      });
-    });
+  if (services) filterObj['services'] = services;
+  if (name) filterObj['name'] = name;
+  if (prefix) filterObj['namePrefix'] = prefix;
+  blue = new Device(filterObj);
+  blue.connect().then(device => {
+    $('#load').hide();
+    $('#connect').hide();
+    $('#getvalue').show();
+    $('#disconnect').show();
+    $('#status').text('Connected!');
+  }).catch(err => {
+    console.log(err);
+  })
+  console.log(blue);
     $('#load').show();
 
 });
@@ -45,7 +50,7 @@ $('#getvalue').on('touchstart click', (event) => {
     batteryFill(value);
   })
   .catch(error => {
-    $('#footer').prepend(`Error! ${error}`);
+    console.log('catched error', error);
   })
 });
 
