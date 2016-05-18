@@ -1,14 +1,160 @@
 // const errorHandler = require('./errorHandler');
 const Bluetooth = {
 	gattCharacteristicsMapping: {
+
 		// battery_level characteristic
 		battery_level: {
 			primaryServices: ['battery_service'],
 			includedProperties: ['read', 'notify']
 		},
+		//blood_pressure_feature characteristic
+		blood_pressure_feature: {
+			primaryServices: ['blood_pressure'],
+			includedProperties: ['read']
+		},
+		//body_composition_feature characteristic
+		body_composition_feature: {
+			primaryServices: ['body_composition'],
+			includedProperties: ['read']
+		}, 
+		//bond_management_feature
+		bond_management_feature: {
+			primaryServices: ['bond_management_feature'],
+			includedProperties: ['read']
+		}, 
+		//cgm_feature characteristic
+		cgm_feature: {
+			primaryServices: ['continuous_glucose_monitoring'], 
+			includedProperties: ['read']
+		}, 
+		//cgm_session_run_time characteristic
+		cgm_session_run_time: {
+			primaryServices: ['continuous_glucose_monitoring'],
+			includedProperties: ['read']
+		},
+		//cgm_session_start_time characteristic
+		cgm_session_start_time: {
+			primaryServices: ['continuous_glucose_monitoring'], 
+			includedProperties: ['read', 'write']
+		},
+		//cgm_status characteristic
+		cgm_status: {
+			primaryServices: ['continuous_glucose_monitoring'],
+			includedProperties: ['read']
+		},
+		//csc_feature characteristic
+		csc_feature: {
+			primaryServices: ['cycling_speed_and_cadence'], 
+			includedProperties: ['read']
+		},
+		//current_time characteristic
+		current_time: {
+			primaryServices: ['current_time'],
+			includedProperties: ['read', 'write', 'notify']
+		}, 
+		//cycling_power_feature characteristic
+		cycling_power_feature: {
+			primaryServices: ['cycling_power'], 
+			includedProperties: ['read']
+		},
+		//firmware_revision_string characteristic
+		firmware_revision_string: {
+			primaryServices: ['device_information'],
+			includedProperties: ['read']
+		}, 
+		//hardware_revision_string characteristic
+		hardware_revision_string: {
+			primaryServices: ['device_information'],
+			includedProperties: ['read']
+		},
+		//ieee_11073-20601_regulatory_certification_data_list characteristic
+		ieee_11073-20601_regulatory_certification_data_list: {
+			primaryServices: ['device_information'],
+			includedProperties: ['read']
+		}, 
+		//gap.appearance characteristic
+		gap.appearance: {
+			primaryServices: ['generic_access'],
+			includedProperties: ['read']
+		},
+		//gap.device_name charcteristic
+		gap.device_name: {
+			primaryServices: ['generic_access'],
+			includedProperties: ['read', 'write']
+		},
+		//gap.peripheral_preferred_connection_parameters characteristic
+		gap.peripheral_preferred_connection_parameters: {
+			primaryServices: ['generic_access'],
+			includedProperties: ['read']
+		},
+		//gap.peripheral_privacy_flag characteristic
+		gap.peripheral_privacy_flag: {
+			primaryServices: ['generic_access'],
+			includedProperties: ['read']
+		},
+		//glucose_feature characteristic
+		glucose_feature: {
+			primaryServices: ['glucose'],
+			includedProperties: ['read']
+		},
+		//http_entity_body characteristic
+		http_entity_body: {
+			primaryServices: ['http_proxy'],
+			includedProperties: ['read', 'write']
+		},
+		//http_headers characteristic
+		http_headers: {
+			primaryServices: ['http_proxy'],
+			includedProperties: ['read'. 'write']
+		},
+		//https_security characteristic
+		https_security: {
+			primaryServices: ['http_proxy'],
+			includedProperties: ['read', 'write']
+		},
+		//intermediate_temperature characteristic
+		intermediate_temperature: {
+			primaryServices: ['health_thermometer'],
+			includedProperties: ['read', 'write', 'indicate']
+		},
+		//local_time_information characteristic
+		local_time_information: {
+			primaryServices: ['current_time'],
+			includedProperties: ['read', 'write']
+		}, 
+		//manufacturer_name_string characteristic
+		manufacturer_name_string: {
+			primaryServices: ['device_information'],
+			includedProperties: ['read']
+		},
+		//model_number_string characterisitc
+		model_number_string: {
+			primaryServices: ['device_information'],
+			includedProperties: ['read']
+		},
+		//pnp_id characteristic
+		pnp_id: {
+			primaryServices: ['device_information'],
+			includedProperties: ['read']
+		}
+		//protocol_mode characteristic
+		protocol_mode: {
+			primaryServices: ['human_interface_device'],
+			includedProperties: ['read', 'writeWithoutResponse']
+		}
+		//reference_time_information characteristic
+		reference_time_information: {
+			primaryServices: ['current_time'],
+			includedProperties: ['read']
+		},
+		//supported_new_alert_category
+		supported_new_alert_category: {
+			primaryServices: ['alert_notification'],
+			includedProperties: ['read']
+		},
 		// sensor_location characteristic
 		sensor_location: {
-			primaryServices: ['heart_rate'],
+			primaryServices: ['heart_rate', 'cycling_speed_and_cadence'],
 			includedProperties: ['read'],
 			parseValue: value => {
 				switch (value) {
@@ -22,6 +168,31 @@ const Bluetooth = {
 					default: return 'Unknown';
 				}
 			}
+		},
+		//serial_number_string characteristic
+		serial_number_string: {
+			primaryServices: ['device_information'],
+			includedProperties: ['read']
+		},
+		//software_revision_string characteristic
+		software_revision_string: {
+			primaryServices: ['device_information'],
+			includedProperties: ['read']
+		}
+		//supported_unread_alert_category characteristic
+		supported_unread_alert_category: {
+			primaryServices: ['alert_notification'],
+			includedProperties: ['read']
+		},
+		//system_id characterisitc
+		system_id: {
+			primaryServices: ['device_information'],
+			includedProperties: ['read']
+		}
+		//temperature_type characteristic
+		temperature_type: {
+			primaryServices: ['health_thermometer'],
+			includedProperties: ['read']
 		}
 	},
   /**
