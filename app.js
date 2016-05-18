@@ -13,7 +13,7 @@ app.listen(process.env.PORT || PORT, function() {
 // routes
 app.get('/', function(req, res){
   res.writeHead(200, {'Content-Type': 'text/html'});
-  res.end(fs.readFileSync(__dirname+'/index.html'));
+  res.end(fs.readFileSync(__dirname+'/index2.html'));
 });
 
 app.get(/.js$|.css$/, function(req, res){
