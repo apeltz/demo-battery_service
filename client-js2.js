@@ -1,20 +1,28 @@
 var percentage = 30;
-//var blue = new Device({services: ['battery_service']});
-var blue = new Device({
-  // name: 'MH08'
-  namePrefix: 'Surge'
-  //services: ['000033f2-0000-1000-8000-00805f9b34fb']
-});
+// removed value assignment from blue at variable declaration
+var blue;
+
+// $(window).load(function() {
+//
+// });
 
 $('#connect').on('touchstart click', (event) => {
-    $('#load').show();
-    blue.connect().then(device => {
-      $('#load').hide();
-      $('#connect').hide();
-      $('#getvalue').show();
-      $('#disconnect').show();
-      $('#status').text('Connected!');
+  var serviceObj = {service: $('#serviceFilter').val()};
+  var nameObj = {name: $('#nameFilter').val()};
+  var prefixObj = {namePrefix: $('#prefixFilter').val()};
+  var filterObj = {}
+  // moved here to populate from filters rather than on page load
+    blue = new Device({services: ['battery_service']}).then( server => {
+      server.connect().then(device => {
+        $('#load').hide();
+        $('#connect').hide();
+        $('#getvalue').show();
+        $('#disconnect').show();
+        $('#status').text('Connected!');
+      });
     });
+    $('#load').show();
+
 });
 
 $('#disconnect').on('touchstart click', (event) => {
@@ -23,8 +31,6 @@ $('#disconnect').on('touchstart click', (event) => {
       $('#connect').show();
       $('#disconnect').hide();
       $('#getvalue').hide();
-      $('#level').text('');
-      batteryFill(0);
     }
     else {
       $('#status').text('Disconnect failed!');
