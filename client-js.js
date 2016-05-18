@@ -1,10 +1,10 @@
 var percentage = 30;
-var blue = new Device({services: ['battery_service']});
-// var blue = new Device({
-//   // name: 'MH08'
-//   namePrefix: 'M',
-//   //services: ['000033f2-0000-1000-8000-00805f9b34fb']
-// });
+//var blue = new Device({services: ['battery_service']});
+var blue = new Device({
+  // name: 'MH08'
+  namePrefix: 'Surge'
+  //services: ['000033f2-0000-1000-8000-00805f9b34fb']
+});
 
 $('#connect').on('touchstart click', (event) => {
     $('#load').show();
@@ -33,7 +33,7 @@ $('#disconnect').on('touchstart click', (event) => {
 });
 
 $('#getvalue').on('touchstart click', (event) => {
-  blue.getValue('battery_level')
+  blue.getValue('body_sensor_location')
   .then(value => {
     $('#level').text(`${value}%`);
     //percentage = value;

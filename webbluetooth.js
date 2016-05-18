@@ -3,11 +3,11 @@ const Bluetooth = {
 	gattCharacteristicsMapping: {
 		// battery_level characteristic
 		battery_level: {
-			primaryServices: ['battery_service'],
+			primaryServices: ['heart_rate'],
 			includedProperties: ['read', 'notify']
 		},
 		// sensor_location characteristic
-		sensor_location: {
+		body_sensor_location: {
 			primaryServices: ['heart_rate'],
 			includedProperties: ['read'],
 			parseValue: value => {
@@ -52,7 +52,7 @@ const Bluetooth = {
 			if (filters.uuid) requestParams.filters.push({ uuid: filters.uuid });
 			if (filters.services) requestParams.filters.push({ services: filters.services });
 			if (filters.optionalServices) requestParams.optionalServices = filters.optionalServices;
-			else requestParams.optionalServices = this.gattServiceList;
+			else requestParams.optionalServices = ['heart_rate'];
 		} else {
 			/*
 			* If no filters are passed in, throw error no_filters
@@ -107,7 +107,7 @@ class Device {
 			if (filters.uuid) requestParams.filters.push({ uuid: filters.uuid });
 			if (filters.services) requestParams.filters.push({ services: filters.services });
 			if (filters.optionalServices) requestParams.optionalServices = filters.optionalServices;
-			else requestParams.optionalServices = this.gattServiceList;
+			else requestParams.optionalServices = ['heart_rate'];
 		} else {
 			/*
 			* If no filters are passed in, throw error no_filters
@@ -206,15 +206,16 @@ class Device {
 		// TODO: add error handling for absent characteristics and characteristic properties
 		var characteristicObj = Bluetooth.gattCharacteristicsMapping[characteristicName];
 		var includedProperties = characteristicObj.includedProperties;
-		console.log('gv-char', characteristicObj);
+		console.log('gv-char', characteristicObj, characteristicName);
 		if (includedProperties.includes('read')){
+			console.log('getting into - includedprops');
 			/**
 			 * TODO: add functionality to map through all primary services
 			 *       to characteristic, if multiple exist e.g. 'sensor_location'...
 			 *       or add functionality at device connection to filter primary
 			 *       services based on only those available to device
 			 */
-			return this.apiServer.getPrimaryService('battery_service')
+			return this.apiServer.getPrimaryService('heart_rate')
 			.then(service => {
 				console.log('service',service);
 				return service.getCharacteristic(characteristicName);
