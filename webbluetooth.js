@@ -407,6 +407,41 @@ class Device {
 		else {
 			// errorHandler('illegal action', {}, err);
 		}
-	} // end getValue
+	}, // end getValue
 
+	postValue(characteristicName, value){
+		var characteristicObj = Bluetooth.gattCharacteristicsMapping[characteristicName];
+		var includedProperties = characteristicObj.includedProperties;
+		if(includedProperties.includes('write')){
+			/**
+			 * TODO: add functionality to map through all primary services
+			 *       to characteristic, if multiple exist e.g. 'sensor_location'...
+			 *       or add functionality at device connection to filter primary
+			 *       services based on only those available to device
+			 */
+		 return this.apiServer.getPrimaryService(characteristicObj.primaryServices[0]);
+			.then(service => {
+				console.log('service',service);
+				return service.getCharacteristic(characteristicName);
+			})
+			.then(characteristic => {
+				/** 
+				*TODO: Add functionality to make sure that the values passed in are in the proper format,
+				*	   and are compatible with the writable device.
+				*/
+				console.log('char',characteristic);
+				return characteristic.writeValue(value);
+			})
+			.then(changedChar => {
+				console.log('changed characteristic:', changedChar);
+			})
+			.catch(err => {
+				console.log('error',err);				
+				// errorHandler('disconnect_error', {}, err);
+			})
+		}
+		else {
+			// handle errors for incorrectly formatted data or whatnot.
+		}
+	}
 };
