@@ -444,4 +444,4 @@ class Device {
 			// handle errors for incorrectly formatted data or whatnot.
 		}
 	}
-};
+}
