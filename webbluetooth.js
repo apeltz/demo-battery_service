@@ -430,7 +430,7 @@ class Device {
 			 *       or add functionality at device connection to filter primary
 			 *       services based on only those available to device
 			 */
-		 return this.apiServer.getPrimaryService(characteristicObj.primaryServices[0]);
+		 return this.apiServer.getPrimaryService(characteristicObj.primaryServices[0])
 			.then(service => {
 				console.log('service',service);
 				return service.getCharacteristic(characteristicName);
