@@ -64,7 +64,7 @@ $('#startNotify').on('touchstart click', (event) => {
     value.addEventListener('characteristicvaluechanged', event =>{
       var newHR = parseHeartRate(event.target.value);
       console.log('newHR: ', newHR)
-      $('#level').append(newHR)
+      $('#level').append(`<p>${newHR.heartRate}</p>`);
     });
   })
   .catch(error => {
