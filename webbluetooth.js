@@ -492,7 +492,7 @@ class Device {
 					// return characteristic;
 					return characteristic.addEventListener('characteristicvaluechanged', event => {
 						console.log('new notificaiton');
-				      func();
+				      func(event);
 				    });
 				})
 			})

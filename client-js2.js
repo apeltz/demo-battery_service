@@ -59,9 +59,9 @@ $('#getvalue').on('touchstart click', (event) => {
 
 $('#startNotify').on('touchstart click', (event) => {
   var characteristic = $('#characteristic').val();
-  blue.startNotifications(characteristic, event =>{
+  blue.startNotifications(characteristic, e =>{
     console.log('doing this thing');
-    var newHR = parseHeartRate(event.target.value);
+    var newHR = parseHeartRate(e.target.value);
     $('#level').append(`<p>${newHR.heartRate}</p>`);
   })
   // .then(value => {
