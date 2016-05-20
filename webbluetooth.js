@@ -489,10 +489,10 @@ class Device {
 				*/
 				console.log("char successfully recieved", characteristic)
 				return characteristic.startNotifications()
-				.then( whatisthis => {
+				.then( () => {
 					console.log('returned from char.sNotif(): ', whatisthis);
 					console.log('char updated to: ', characteristic);
-					return whatisthis;
+					return characteristic;
 				})
 			})
 			.catch(err => {
