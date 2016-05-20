@@ -1,9 +1,10 @@
 var percentage = 30;
-var blue = new Device({services: ['battery_service']});
-
-// $(window).load(function() {
-//
-// });
+//var blue = new Device({services: ['battery_service']});
+var blue = new Device({
+  // name: 'MH08'
+  namePrefix: 'Surge'
+  //services: ['000033f2-0000-1000-8000-00805f9b34fb']
+});
 
 $('#connect').on('touchstart click', (event) => {
     $('#load').show();
@@ -22,6 +23,8 @@ $('#disconnect').on('touchstart click', (event) => {
       $('#connect').show();
       $('#disconnect').hide();
       $('#getvalue').hide();
+      $('#level').text('');
+      batteryFill(0);
     }
     else {
       $('#status').text('Disconnect failed!');
