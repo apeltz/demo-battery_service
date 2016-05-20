@@ -488,12 +488,12 @@ class Device {
 				*	   and are compatible with the writable device.
 				*/
 				console.log("char successfully recieved", characteristic)
-				return characteristic.startNotifications();
-			})
-			.then( whatisthis => {
-				console.log('returned from char.sNotif(): ', whatisthis);
-				console.log('characteristic: ', characteristic)
-				return whatisthis;
+				return characteristic.startNotifications()
+				.then( whatisthis => {
+					console.log('returned from char.sNotif(): ', whatisthis);
+					console.log('char updated to: ', characteristic);
+					return whatisthis;
+				})
 			})
 			.catch(err => {
 				console.log('error',err);
