@@ -126,7 +126,7 @@ const Bluetooth = {
 			primaryServices: ['device_information'],
 			includedProperties: ['read']
 		},
-		//model_number_string characterisitc
+		//model_number_string characteristic
 		model_number_string: {
 			primaryServices: ['device_information'],
 			includedProperties: ['read']
@@ -183,7 +183,7 @@ const Bluetooth = {
 			primaryServices: ['alert_notification'],
 			includedProperties: ['read']
 		},
-		//system_id characterisitc
+		//system_id characteristic
 		system_id: {
 			primaryServices: ['device_information'],
 			includedProperties: ['read']
@@ -381,7 +381,7 @@ class Device {
 	 *
 	 * @param {string} GATT characteristic name
 	 * @return {Promise} A promise to the characteristic value
-	 *					returns false after 3ms
+	 *
 	 */
 	getValue(characteristicName) {
 		// TODO: add error handling for absent characteristics and characteristic properties
@@ -454,5 +454,49 @@ class Device {
 		else {
 			// handle errors for incorrectly formatted data or whatnot.
 		}
-	}
+	} // end of postValue
+
+	/**
+	 * Attempts to start notifications for changes to BT device values and retrieve
+	 * updated values
+	 *
+	 * @param {string} GATT characteristic name
+	 * @return TODO: what does this return!?!
+	 *
+	 */
+	getNotifications(characteristicName){
+		var characteristicObj = Bluetooth.gattCharacteristicsMapping[characteristicName];
+		var includedProperties = characteristicObj.includedProperties;
+		if(includedProperties.includes('notify')){
+			/**
+			 * TODO: add functionality to map through all primary services
+			 *       to characteristic, if multiple exist e.g. 'sensor_location'...
+			 *       or add functionality at device connection to filter primary
+			 *       services based on only those available to device
+			 */
+		 return this.apiServer.getPrimaryService(characteristicObj.primaryServices[0])
+			.then(service => {
+				return service.getCharacteristic(characteristicName);
+			})
+			.then(characteristic => {
+				/**
+				*TODO: Add functionality to make sure that the values passed in are in the proper format,
+				*	   and are compatible with the writable device.
+				*/
+				return characteristic.startNotifications();
+			})
+			.then( whatisthis => {
+				console.log('returned from char.sNotif(): ', whatisthis);
+				console.log('characteristic: ', characteristic)
+				return characteristic;
+			})
+			.catch(err => {
+				console.log('error',err);
+				// errorHandler('disconnect_error', {}, err);
+			})
+		}
+		else {
+			// handle errors for incorrectly formatted data or whatnot.
+		}
+	} // end of postValue
 }
