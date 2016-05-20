@@ -487,10 +487,8 @@ class Device {
 				*TODO: Add functionality to make sure that the values passed in are in the proper format,
 				*	   and are compatible with the writable device.
 				*/
-				console.log("char successfully recieved", characteristic)
 				return characteristic.startNotifications()
 				.then( () => {
-					console.log('char updated to: ', characteristic);
 					return characteristic;
 				})
 			})
