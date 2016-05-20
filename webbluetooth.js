@@ -468,7 +468,7 @@ class Device {
 	 * @return TODO: what does this return!?!
 	 *
 	 */
-	startNotifications(characteristicName){
+	startNotifications(characteristicName, func){
 		var characteristicObj = Bluetooth.gattCharacteristicsMapping[characteristicName];
 		var includedProperties = characteristicObj.includedProperties;
 		if(includedProperties.includes('notify')){
@@ -492,7 +492,7 @@ class Device {
 					// return characteristic;
 					return characteristic.addEventListener('characteristicvaluechanged', event => {
 						console.log('new notificaiton');
-				      return event;
+				      func();
 				    });
 				})
 			})

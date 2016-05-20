@@ -59,17 +59,20 @@ $('#getvalue').on('touchstart click', (event) => {
 
 $('#startNotify').on('touchstart click', (event) => {
   var characteristic = $('#characteristic').val();
-  blue.startNotifications(characteristic)
-  .then(value => {
-    console.log('in returned promise...')
-    var newHR = parseHeartRate(value.target.value);
+  blue.startNotifications(characteristic, event =>{
+    console.log('doing this thing');
+    var newHR = parseHeartRate(event.target.value);
     $('#level').append(`<p>${newHR.heartRate}</p>`);
+  })
+  // .then(value => {
+  //   console.log('in returned promise...')
+
     // value.addEventListener('characteristicvaluechanged', event =>{
     //   var newHR = parseHeartRate(event.target.value);
     //   console.log('newHR: ', newHR);
     //   $('#level').append(`<p>${newHR.heartRate}</p>`);
     // });
-  })
+  // })
   .catch(error => {
     console.log('catched error', error);
   })
