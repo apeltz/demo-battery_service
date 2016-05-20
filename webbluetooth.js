@@ -168,6 +168,10 @@ const Bluetooth = {
 				}
 			}
 		},
+		heart_rate_measurment: {
+			primaryServices: ['heart_rate'],
+			includedProperties: ['notify']
+		},
 		//serial_number_string characteristic
 		serial_number_string: {
 			primaryServices: ['device_information'],
