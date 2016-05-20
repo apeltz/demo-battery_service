@@ -244,7 +244,7 @@ const Bluetooth = {
 		    result.rrIntervals = rrIntervals;
 		  }
 		  return result;
-		}
+		},
 
   /**
 	  * Calls navigator.bluetooth.requestDevice
