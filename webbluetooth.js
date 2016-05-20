@@ -16,17 +16,17 @@ const Bluetooth = {
 		body_composition_feature: {
 			primaryServices: ['body_composition'],
 			includedProperties: ['read']
-		}, 
+		},
 		//bond_management_feature
 		bond_management_feature: {
 			primaryServices: ['bond_management_feature'],
 			includedProperties: ['read']
-		}, 
+		},
 		//cgm_feature characteristic
 		cgm_feature: {
-			primaryServices: ['continuous_glucose_monitoring'], 
+			primaryServices: ['continuous_glucose_monitoring'],
 			includedProperties: ['read']
-		}, 
+		},
 		//cgm_session_run_time characteristic
 		cgm_session_run_time: {
 			primaryServices: ['continuous_glucose_monitoring'],
@@ -34,7 +34,7 @@ const Bluetooth = {
 		},
 		//cgm_session_start_time characteristic
 		cgm_session_start_time: {
-			primaryServices: ['continuous_glucose_monitoring'], 
+			primaryServices: ['continuous_glucose_monitoring'],
 			includedProperties: ['read', 'write']
 		},
 		//cgm_status characteristic
@@ -44,24 +44,24 @@ const Bluetooth = {
 		},
 		//csc_feature characteristic
 		csc_feature: {
-			primaryServices: ['cycling_speed_and_cadence'], 
+			primaryServices: ['cycling_speed_and_cadence'],
 			includedProperties: ['read']
 		},
 		//current_time characteristic
 		current_time: {
 			primaryServices: ['current_time'],
 			includedProperties: ['read', 'write', 'notify']
-		}, 
+		},
 		//cycling_power_feature characteristic
 		cycling_power_feature: {
-			primaryServices: ['cycling_power'], 
+			primaryServices: ['cycling_power'],
 			includedProperties: ['read']
 		},
 		//firmware_revision_string characteristic
 		firmware_revision_string: {
 			primaryServices: ['device_information'],
 			includedProperties: ['read']
-		}, 
+		},
 		//hardware_revision_string characteristic
 		hardware_revision_string: {
 			primaryServices: ['device_information'],
@@ -71,7 +71,7 @@ const Bluetooth = {
 		ieee_11073-20601_regulatory_certification_data_list: {
 			primaryServices: ['device_information'],
 			includedProperties: ['read']
-		}, 
+		},
 		//gap.appearance characteristic
 		gap.appearance: {
 			primaryServices: ['generic_access'],
@@ -121,7 +121,7 @@ const Bluetooth = {
 		local_time_information: {
 			primaryServices: ['current_time'],
 			includedProperties: ['read', 'write']
-		}, 
+		},
 		//manufacturer_name_string characteristic
 		manufacturer_name_string: {
 			primaryServices: ['device_information'],
@@ -676,7 +676,7 @@ class Device {
 				return service.getCharacteristic(characteristicName);
 			})
 			.then(characteristic => {
-				/** 
+				/**
 				*TODO: Add functionality to make sure that the values passed in are in the proper format,
 				*	   and are compatible with the writable device.
 				*/
@@ -687,7 +687,7 @@ class Device {
 				console.log('changed characteristic:', changedChar);
 			})
 			.catch(err => {
-				console.log('error',err);				
+				console.log('error',err);
 				// errorHandler('disconnect_error', {}, err);
 			})
 		}
