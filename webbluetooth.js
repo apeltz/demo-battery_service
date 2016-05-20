@@ -491,6 +491,7 @@ class Device {
 				.then( () => {
 					// return characteristic;
 					return characteristic.addEventListener('characteristicvaluechanged', event => {
+						console.log('event: ', event)
 						console.log('new notificaiton');
 				      func(event);
 				    });
