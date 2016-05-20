@@ -489,7 +489,11 @@ class Device {
 				*/
 				return characteristic.startNotifications()
 				.then( () => {
-					return characteristic;
+					// return characteristic;
+					return characteristic.addEventListener('characteristicvaluechanged', event => {
+						console.log('new notificaiton');
+				      return event;
+				    });
 				})
 			})
 			.catch(err => {
