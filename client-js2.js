@@ -65,7 +65,7 @@ $('#startNotify').on('touchstart click', (event) => {
       var newHR = parseHeartRate(event.target.value);
       console.log('newHR: ', newHR)
       $('#level').append(newHR)
-    })
+    });
   })
   .catch(error => {
     console.log('catched error', error);
@@ -96,7 +96,7 @@ function batteryFill(percentage) {
 
 
 // Francios parser... need to add to gattCharacteristicsMapping object
-parseHeartRate(value) {
+function parseHeartRate(value) {
   // In Chrome 50+, a DataView is returned instead of an ArrayBuffer.
   value = value.buffer ? value : new DataView(value);
   let flags = value.getUint8(0);
