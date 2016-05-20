@@ -126,7 +126,7 @@ const Bluetooth = {
 			primaryServices: ['device_information'],
 			includedProperties: ['read']
 		},
-		//model_number_string characterisitc
+		//model_number_string characteristic
 		model_number_string: {
 			primaryServices: ['device_information'],
 			includedProperties: ['read']
@@ -168,6 +168,10 @@ const Bluetooth = {
 				}
 			}
 		},
+		heart_rate_measurement: {
+			primaryServices: ['heart_rate'],
+			includedProperties: ['notify']
+		},
 		//serial_number_string characteristic
 		serial_number_string: {
 			primaryServices: ['device_information'],
@@ -183,7 +187,7 @@ const Bluetooth = {
 			primaryServices: ['alert_notification'],
 			includedProperties: ['read']
 		},
-		//system_id characterisitc
+		//system_id characteristic
 		system_id: {
 			primaryServices: ['device_information'],
 			includedProperties: ['read']
@@ -205,6 +209,42 @@ const Bluetooth = {
       'pulse_oximeter', 'reference_time_update', 'running_speed_and_cadence',
       'scan_parameters', 'tx_power', 'user_data', 'weight_scale'
     ],
+
+		// Francios parser... need to add to gattCharacteristicsMapping object
+		parseHeartRate(value) {
+		  // In Chrome 50+, a DataView is returned instead of an ArrayBuffer.
+		  value = value.buffer ? value : new DataView(value);
+		  let flags = value.getUint8(0);
+		  let rate16Bits = flags & 0x1;
+		  let result = {};
+		  let index = 1;
+		  if (rate16Bits) {
+		    result.heartRate = value.getUint16(index, /*littleEndian=*/true);
+		    index += 2;
+		  } else {
+		    result.heartRate = value.getUint8(index);
+		    index += 1;
+		  }
+		  let contactDetected = flags & 0x2;
+		  let contactSensorPresent = flags & 0x4;
+		  if (contactSensorPresent) {
+		    result.contactDetected = !!contactDetected;
+		  }
+		  let energyPresent = flags & 0x8;
+		  if (energyPresent) {
+		    result.energyExpended = value.getUint16(index, /*littleEndian=*/true);
+		    index += 2;
+		  }
+		  let rrIntervalPresent = flags & 0x10;
+		  if (rrIntervalPresent) {
+		    let rrIntervals = [];
+		    for (; index + 1 < value.byteLength; index += 2) {
+		      rrIntervals.push(value.getUint16(index, /*littleEndian=*/true));
+		    }
+		    result.rrIntervals = rrIntervals;
+		  }
+		  return result;
+		},
 
   /**
 	  * Calls navigator.bluetooth.requestDevice
@@ -381,7 +421,7 @@ class Device {
 	 *
 	 * @param {string} GATT characteristic name
 	 * @return {Promise} A promise to the characteristic value
-	 *					returns false after 3ms
+	 *
 	 */
 	getValue(characteristicName) {
 		// TODO: add error handling for absent characteristics and characteristic properties
@@ -454,5 +494,50 @@ class Device {
 		else {
 			// handle errors for incorrectly formatted data or whatnot.
 		}
-	}
-};
+	} // end of postValue
+
+	/**
+	 * Attempts to start notifications for changes to BT device values and retrieve
+	 * updated values
+	 *
+	 * @param {string} GATT characteristic name
+	 * @return TODO: what does this return!?!
+	 *
+	 */
+	startNotifications(characteristicName, func){
+		var characteristicObj = Bluetooth.gattCharacteristicsMapping[characteristicName];
+		var includedProperties = characteristicObj.includedProperties;
+		if(includedProperties.includes('notify')){
+			/**
+			 * TODO: add functionality to map through all primary services
+			 *       to characteristic, if multiple exist e.g. 'sensor_location'...
+			 *       or add functionality at device connection to filter primary
+			 *       services based on only those available to device
+			 */
+		 return this.apiServer.getPrimaryService(characteristicObj.primaryServices[0])
+			.then(service => {
+				return service.getCharacteristic(characteristicName);
+			})
+			.then(characteristic => {
+				/**
+				*TODO: Add functionality to make sure that the values passed in are in the proper format,
+				*	   and are compatible with the writable device.
+				*/
+				return characteristic.startNotifications()
+				.then( () => {
+					// return characteristic;
+					return characteristic.addEventListener('characteristicvaluechanged', event => {
+				      func(event);
+				    });
+				})
+			})
+			.catch(err => {
+				console.log('error',err);
+				// errorHandler('disconnect_error', {}, err);
+			})
+		}
+		else {
+			// handle errors for incorrectly formatted data or whatnot.
+		}
+	} // end of postValue
+}
