@@ -59,7 +59,6 @@ $('#getvalue').on('touchstart click', (event) => {
 
 $('#startNotify').on('touchstart click', (event) => {
   var characteristic = $('#characteristic').val();
-  console.log('Attempting to retrieve characteristic: ', characteristic);
   blue.startNotifications(characteristic)
   .then(value => {
     console.log('returned value: ', value)
