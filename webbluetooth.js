@@ -470,6 +470,7 @@ class Device {
 	 */
 	startNotifications(characteristicName){
 		var characteristicObj = Bluetooth.gattCharacteristicsMapping[characteristicName];
+		console.log("charObj: ", characteristicObj);
 		var includedProperties = characteristicObj.includedProperties;
 		if(includedProperties.includes('notify')){
 			/**
