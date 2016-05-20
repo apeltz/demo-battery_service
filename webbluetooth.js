@@ -168,7 +168,7 @@ const Bluetooth = {
 				}
 			}
 		},
-		heart_rate_measurment: {
+		heart_rate_measurement: {
 			primaryServices: ['heart_rate'],
 			includedProperties: ['notify']
 		},
@@ -469,6 +469,7 @@ class Device {
 	 *
 	 */
 	startNotifications(characteristicName){
+		console.log('charName: ', characteristicName);
 		var characteristicObj = Bluetooth.gattCharacteristicsMapping[characteristicName];
 		console.log("charObj: ", characteristicObj);
 		var includedProperties = characteristicObj.includedProperties;
