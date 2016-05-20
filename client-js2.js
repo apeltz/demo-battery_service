@@ -20,6 +20,7 @@ $('#connect').on('touchstart click', (event) => {
     $('#load').hide();
     $('#connect').hide();
     $('#getvalue').show();
+    $('#startNotify').show();
     $('#disconnect').show();
     $('#status').text('Connected!');
   }).catch(err => {
@@ -36,6 +37,7 @@ $('#disconnect').on('touchstart click', (event) => {
       $('#connect').show();
       $('#disconnect').hide();
       $('#getvalue').hide();
+      $('#startNotify').hide();
     }
     else {
       $('#status').text('Disconnect failed!');
@@ -49,6 +51,21 @@ $('#getvalue').on('touchstart click', (event) => {
     $('#level').text(`${value}%`);
     //percentage = value;
     batteryFill(value);
+  })
+  .catch(error => {
+    console.log('catched error', error);
+  })
+});
+
+$('#startNotify').on('touchstart click', (event) => {
+  var characteristic = $('#characteristic').val();
+  blue.startNotifications(characteristic)
+  .then(value => {
+    console.log('returned value: ', value)
+    value.addEventListener('characteristicvaluechanged', event =>{
+      console.log('event: ', event);
+      $('#level').append(event.target.value)
+    })
   })
   .catch(error => {
     console.log('catched error', error);

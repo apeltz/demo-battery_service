@@ -464,7 +464,7 @@ class Device {
 	 * @return TODO: what does this return!?!
 	 *
 	 */
-	getNotifications(characteristicName){
+	startNotifications(characteristicName){
 		var characteristicObj = Bluetooth.gattCharacteristicsMapping[characteristicName];
 		var includedProperties = characteristicObj.includedProperties;
 		if(includedProperties.includes('notify')){

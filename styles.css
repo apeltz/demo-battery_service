@@ -136,6 +136,12 @@ a {
   display:none;
   box-shadow: 0 4px 8px 0 rgba(0, 0, 0, .20);
 }
+#startNotify {
+  color: royalblue;
+  background: #e7e7e7;
+  display:none;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, .20);
+}
 #disconnect {
   color:#fff;
   background: red;
