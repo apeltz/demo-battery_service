@@ -104,6 +104,8 @@ function batteryFill(percentage) {
 function parseHeartRate(value) {
   // In Chrome 50+, a DataView is returned instead of an ArrayBuffer.
   console.log('value: ', value);
+  console.log(value);
+  console.log('valueStr: ', JSON.stringify(value))
   value = value.buffer ? value : new DataView(value);
   let flags = value.getUint8(0);
   console.log('flags: ', flags);
