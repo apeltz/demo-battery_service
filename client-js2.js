@@ -60,7 +60,6 @@ $('#getvalue').on('touchstart click', (event) => {
 $('#startNotify').on('touchstart click', (event) => {
   var characteristic = $('#characteristic').val();
   blue.startNotifications(characteristic, e =>{
-    console.log('doing this thing');
     var newHR = parseHeartRate(e.target.value);
     $('#level').append(`<p>${newHR.heartRate}</p>`);
   })
@@ -104,9 +103,12 @@ function batteryFill(percentage) {
 // Francios parser... need to add to gattCharacteristicsMapping object
 function parseHeartRate(value) {
   // In Chrome 50+, a DataView is returned instead of an ArrayBuffer.
+  console.log('value: ', value);
   value = value.buffer ? value : new DataView(value);
   let flags = value.getUint8(0);
+  console.log('flags: ', flags);
   let rate16Bits = flags & 0x1;
+  console.log('rate16Bits: ', rate16Bits);
   let result = {};
   let index = 1;
   if (rate16Bits) {
@@ -117,16 +119,20 @@ function parseHeartRate(value) {
     index += 1;
   }
   let contactDetected = flags & 0x2;
+  console.log('contactDetected: ', contactDetected);
   let contactSensorPresent = flags & 0x4;
+  console.log('contactSensorPresent: ', contactSensorPresent);
   if (contactSensorPresent) {
     result.contactDetected = !!contactDetected;
   }
   let energyPresent = flags & 0x8;
+  console.log('energyPresent: ', energyPresent);
   if (energyPresent) {
     result.energyExpended = value.getUint16(index, /*littleEndian=*/true);
     index += 2;
   }
   let rrIntervalPresent = flags & 0x10;
+  console.log('rrIntervalPresent: ', rrIntervalPresent);
   if (rrIntervalPresent) {
     let rrIntervals = [];
     for (; index + 1 < value.byteLength; index += 2) {
