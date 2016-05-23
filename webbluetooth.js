@@ -156,21 +156,71 @@ const Bluetooth = {
 			primaryServices: ['heart_rate'],
 			includedProperties: ['read'],
 			parseValue: value => {
+				let result = {};
 				switch (value) {
-					case 0: return 'Other';
-					case 1: return 'Chest';
-					case 2: return 'Wrist';
-					case 3: return 'Finger';
-					case 4: return 'Hand';
-					case 5: return 'Ear Lobe';
-					case 6: return 'Foot';
-					default: return 'Unknown';
+					case 0: result.location = 'Other';
+					case 1: result.location = 'Chest';
+					case 2: result.location = 'Wrist';
+					case 3: result.location = 'Finger';
+					case 4: result.location = 'Hand';
+					case 5: result.location = 'Ear Lobe';
+					case 6: result.location = 'Foot';
+					default: result.location = 'Unknown';
 				}
+				return result;
 			}
 		},
 		heart_rate_measurement: {
 			primaryServices: ['heart_rate'],
-			includedProperties: ['notify']
+			includedProperties: ['notify'],
+			/**
+				* Parses the event.target.value object and returns object with readable
+				* key-value pairs for all advertised characteristic values
+				*
+				*	@param {Object} value Takes event.target.value object from startNotifications method
+				*
+				* @return {Object} result Returns readable object with relevant characteristic values
+				*
+				*/
+			parseValue: value => {
+				// In Chrome 50+, a DataView is returned instead of an ArrayBuffer.
+				value = value.buffer ? value : new DataView(value);
+				// Reads first byte and determines which value fields are present based on flags
+				let flags = value.getUint8(0);
+				let rate16Bits = flags & 0x1;
+				let contactDetected = flags & 0x2;
+				let contactSensorPresent = flags & 0x4;
+				let energyPresent = flags & 0x8;
+				let rrIntervalPresent = flags & 0x10;
+				// Object to store values to be returned to startNotifications method
+				let result = {};
+				// Iterate over DataView to retrieve values at each index where values are present
+				let index = 1;
+				// heartRate can be advertised in either 8- or 16-bit format
+				// increment index accordingly to provide correct address for retriving next possible value
+				if (rate16Bits) {
+					result.heartRate = value.getUint16(index, /*littleEndian=*/true);
+					index += 2;
+				} else {
+					result.heartRate = value.getUint8(index);
+					index += 1;
+				}
+				if (contactSensorPresent) {
+					result.contactDetected = !!contactDetected;
+				}
+				if (energyPresent) {
+					result.energyExpended = value.getUint16(index, /*littleEndian=*/true);
+					index += 2;
+				}
+				if (rrIntervalPresent) {
+					let rrIntervals = [];
+					for (; index + 1 < value.byteLength; index += 2) {
+						rrIntervals.push(value.getUint16(index, /*littleEndian=*/true));
+					}
+					result.rrIntervals = rrIntervals;
+				}
+				return result;
+			}
 		},
 		//serial_number_string characteristic
 		serial_number_string: {
@@ -210,41 +260,7 @@ const Bluetooth = {
       'scan_parameters', 'tx_power', 'user_data', 'weight_scale'
     ],
 
-		// Francios parser... need to add to gattCharacteristicsMapping object
-		parseHeartRate(value) {
-		  // In Chrome 50+, a DataView is returned instead of an ArrayBuffer.
-		  value = value.buffer ? value : new DataView(value);
-		  let flags = value.getUint8(0);
-		  let rate16Bits = flags & 0x1;
-		  let result = {};
-		  let index = 1;
-		  if (rate16Bits) {
-		    result.heartRate = value.getUint16(index, /*littleEndian=*/true);
-		    index += 2;
-		  } else {
-		    result.heartRate = value.getUint8(index);
-		    index += 1;
-		  }
-		  let contactDetected = flags & 0x2;
-		  let contactSensorPresent = flags & 0x4;
-		  if (contactSensorPresent) {
-		    result.contactDetected = !!contactDetected;
-		  }
-		  let energyPresent = flags & 0x8;
-		  if (energyPresent) {
-		    result.energyExpended = value.getUint16(index, /*littleEndian=*/true);
-		    index += 2;
-		  }
-		  let rrIntervalPresent = flags & 0x10;
-		  if (rrIntervalPresent) {
-		    let rrIntervals = [];
-		    for (; index + 1 < value.byteLength; index += 2) {
-		      rrIntervals.push(value.getUint16(index, /*littleEndian=*/true));
-		    }
-		    result.rrIntervals = rrIntervals;
-		  }
-		  return result;
-		},
+
 
   /**
 	  * Calls navigator.bluetooth.requestDevice
