@@ -89,12 +89,11 @@ const Bluetooth = {
 			includedProperties: ['read', 'write'],
 			parseValue: value => {
 				value = value.buffer ? value : new DataView(value);
-				let integerValue = value.reduce((a,b,i,arr)=>{
-					return a+arr.getUint8(b).toString(16)
-				},'')
-
 				let result = {};
-				result.device_name = integerValue;
+				result.device_name = '';
+				for(var i=0; i<value.byteLength; i++){
+					result.device_name+= value.getUint8(i).toString(16);
+				}
 				return result;
 			},
 			prepValue: value => {
