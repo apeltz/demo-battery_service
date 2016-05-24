@@ -9,7 +9,7 @@ const Bluetooth = {
 				value = value.buffer ? value : new DataView(value);
 				let integerValue = value.getUint8(0);
 				let result = {};
-				result.batteryLevel = integerValue;
+				result.battery_level = integerValue;
 				return result;
 			}
 		},
@@ -86,7 +86,21 @@ const Bluetooth = {
 		//gap.device_name charcteristic
 		'gap.device_name': {
 			primaryServices: ['generic_access'],
-			includedProperties: ['read', 'write']
+			includedProperties: ['read', 'write'],
+			parseValue: value => {
+				console.log('raw value: ', value)
+				value = value.buffer ? value : new DataView(value);
+				let integerValue = value.getUint8(0);
+				console.log('getUint8 value: ', integerValue);
+
+				let result = {};
+				result.device_name = integerValue;
+				return result;
+			},
+			prepValue: value => {
+				// TACKLE THIS NEXT
+				return value;
+			}
 		},
 		//gap.peripheral_preferred_connection_parameters characteristic
 		'gap.peripheral_preferred_connection_parameters': {
@@ -482,7 +496,7 @@ class Device {
 			.then(value => {
 				var parsedValue = characteristicObj.parseValue(value);
 				parseValue.eventObj = value;
-				console.log(parseValue);
+				console.log('returned to developer at end of getValue fn: ', parseValue);
 				return parsedValue;
 
 			})
