@@ -6,6 +6,7 @@ const Bluetooth = {
 			primaryServices: ['battery_service'],
 			includedProperties: ['read', 'notify'],
 			parseValue: value => {
+				value = value.buffer ? value : new DataView(value);
 				let integerValue = value.getUint8(0);
 				let result = {};
 				result.batteryLevel = integerValue;
@@ -162,6 +163,7 @@ const Bluetooth = {
 			primaryServices: ['heart_rate'],
 			includedProperties: ['read'],
 			parseValue: value => {
+				value = value.buffer ? value : new DataView(value);
 				let integerValue = value.getUint8(0);
 				let result = {};
 				switch (integerValue) {
@@ -175,6 +177,17 @@ const Bluetooth = {
 					default: result.location = 'Unknown';
 				}
 				return result;
+			}
+		},
+		// heart_rate_control_point
+		heart_rate_control_point: {
+			primaryServices: ['heart_rate'],
+			includedProperties: ['write'],
+			prepValue: value => {
+				let binaryValue = new ArrayBuffer(1);
+				let writeView = new DataView(binaryValue);
+				writeView.setUint8(0,value);
+				return writeView;
 			}
 		},
 		heart_rate_measurement: {
@@ -504,7 +517,10 @@ class Device {
 				*	   and are compatible with the writable device.
 				*/
 				console.log('char',characteristic);
-				return characteristic.writeValue(value);
+				console.log('value parameter provided: ',value);
+				console.log('formatted value: ', characteristicObj.prepValue(value))
+				var formattedValue = characteristicObj.prepValue(value);
+				return characteristic.writeValue(formattedValue);
 			})
 			.then(changedChar => {
 				console.log('changed characteristic:', changedChar);

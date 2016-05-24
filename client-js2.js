@@ -77,6 +77,27 @@ $('#startNotify').on('touchstart click', (event) => {
   })
 });
 
+$('#writeValue').on('touchstart click', (event) => {
+  var characteristic = $('#characteristic').val();
+  var value = $('#writeInteger').val();
+  blue.postValue(characteristic, value).then(e => {
+    console.log('returned from postValue promise: ', e);
+
+  })
+  // .then(value => {
+  //   console.log('in returned promise...')
+
+    // value.addEventListener('characteristicvaluechanged', event =>{
+    //   var newHR = parseHeartRate(event.target.value);
+    //   console.log('newHR: ', newHR);
+    //   $('#level').append(`<p>${newHR.heartRate}</p>`);
+    // });
+  // })
+  .catch(error => {
+    console.log('catched error in writeValue', error);
+  })
+});
+
 //TODO: handling for disconnect
 $('#cancel').on('click', event => {
   event.preventDefault();
