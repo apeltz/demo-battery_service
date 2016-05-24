@@ -4,7 +4,13 @@ const Bluetooth = {
 		// battery_level characteristic
 		battery_level: {
 			primaryServices: ['battery_service'],
-			includedProperties: ['read', 'notify']
+			includedProperties: ['read', 'notify'],
+			parseValue: value => {
+				let integerValue = value.getUint8(0);
+				let result = {};
+				result.batteryLevel = integerValue;
+				return result;
+			}
 		},
 		//blood_pressure_feature characteristic
 		blood_pressure_feature: {
@@ -156,8 +162,9 @@ const Bluetooth = {
 			primaryServices: ['heart_rate'],
 			includedProperties: ['read'],
 			parseValue: value => {
+				let integerValue = value.getUint8(0);
 				let result = {};
-				switch (value) {
+				switch (integerValue) {
 					case 0: result.location = 'Other';
 					case 1: result.location = 'Chest';
 					case 2: result.location = 'Wrist';
@@ -454,17 +461,17 @@ class Device {
 			 // USE AARON'S COMPUTER
 			return this.apiServer.getPrimaryService(characteristicObj.primaryServices[0])
 			.then(service => {
-				console.log('service',service);
 				return service.getCharacteristic(characteristicName);
 			})
 			.then(characteristic => {
-				console.log('char',characteristic);
 				return characteristic.readValue();
 			})
 			.then(value => {
-				console.log('value',value);
-				if (!characteristicObj.parseValue) return value.getUint8(0)
-				return characteristicObj.parseValue(value.getUint8(0));
+				var parsedValue = characteristicObj.parseValue(value);
+				parseValue.eventObj = value;
+				console.log(parseValue);
+				return parsedValue;
+
 			})
 			.catch(err => {
 				console.log('error',err);
