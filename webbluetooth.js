@@ -520,7 +520,7 @@ class Device {
 				console.log('value parameter provided: ',value);
 				console.log('formatted value: ', characteristicObj.prepValue(value))
 				var formattedValue = characteristicObj.prepValue(value);
-				return characteristic.writeValue(formattedValue[0]);
+				return characteristic.writeValue(formattedValue);
 			})
 			.then(changedChar => {
 				console.log('changed characteristic:', changedChar);
