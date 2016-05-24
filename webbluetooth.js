@@ -88,10 +88,10 @@ const Bluetooth = {
 			primaryServices: ['generic_access'],
 			includedProperties: ['read', 'write'],
 			parseValue: value => {
-				console.log('raw value: ', value)
 				value = value.buffer ? value : new DataView(value);
-				let integerValue = value.getUint8(0);
-				console.log('getUint8 value: ', integerValue);
+				let integerValue = value.reduce((a,b,i,arr)=>{
+					return a+arr.getUint8(b).toString(16)
+				},'')
 
 				let result = {};
 				result.device_name = integerValue;
@@ -496,7 +496,7 @@ class Device {
 			.then(value => {
 				var parsedValue = characteristicObj.parseValue(value);
 				parseValue.eventObj = value;
-				console.log('returned to developer at end of getValue fn: ', parseValue);
+				console.log('returned to developer at end of getValue fn: ', parsedValue);
 				return parsedValue;
 
 			})
