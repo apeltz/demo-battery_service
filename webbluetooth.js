@@ -184,8 +184,8 @@ const Bluetooth = {
 			primaryServices: ['heart_rate'],
 			includedProperties: ['write'],
 			prepValue: value => {
-				let binaryValue = new ArrayBuffer(1);
-				let writeView = new DataView(binaryValue);
+				let buffer = new ArrayBuffer(1);
+				let writeView = new DataView(buffer);
 				writeView.setUint8(0,value);
 				return writeView;
 			}
@@ -520,7 +520,7 @@ class Device {
 				console.log('value parameter provided: ',value);
 				console.log('formatted value: ', characteristicObj.prepValue(value))
 				var formattedValue = characteristicObj.prepValue(value);
-				return characteristic.writeValue(formattedValue);
+				return characteristic.writeValue(formattedValue[0]);
 			})
 			.then(changedChar => {
 				console.log('changed characteristic:', changedChar);
