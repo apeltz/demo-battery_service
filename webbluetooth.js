@@ -92,8 +92,11 @@ const Bluetooth = {
 				let result = {};
 				result.device_name = '';
 				for(var i=0; i<value.byteLength; i++){
+					console.log(`value.getUint8(${i}): `, value.getUint8(i));
+					console.log(`to string(16): `, value.getUint8(i).toString(16));
 					result.device_name+= value.getUint8(i).toString(16);
 				}
+				console.log('result object: ', result)
 				return result;
 			},
 			prepValue: value => {
