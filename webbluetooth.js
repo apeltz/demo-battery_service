@@ -99,7 +99,8 @@ const Bluetooth = {
 			},
 			prepValue: value => {
 				// TACKLE THIS NEXT
-				let buffer = new ArrayBuffer(15);
+				console.log('value.length: ',value.length)
+				let buffer = new ArrayBuffer(value.length);
 				let preppedValue = new DataView(buffer);
 				value.split('').forEach((char, i)=>{
 					console.log('setting to: ', parseInt(char))
