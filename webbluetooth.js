@@ -99,7 +99,12 @@ const Bluetooth = {
 			},
 			prepValue: value => {
 				// TACKLE THIS NEXT
-				return value;
+				let buffer = new ArrayBuffer(20);
+				let preppedValue = new DataView(buffer);
+				value.split('').forEach((char, i)=>{
+					preppedValue.setUint8(i, parseInt(char));
+				})
+				return preppedValue;
 			}
 		},
 		//gap.peripheral_preferred_connection_parameters characteristic
@@ -530,9 +535,6 @@ class Device {
 				*TODO: Add functionality to make sure that the values passed in are in the proper format,
 				*	   and are compatible with the writable device.
 				*/
-				console.log('char',characteristic);
-				console.log('value parameter provided: ',value);
-				console.log('formatted value: ', characteristicObj.prepValue(value))
 				var formattedValue = characteristicObj.prepValue(value);
 				return characteristic.writeValue(formattedValue);
 			})
