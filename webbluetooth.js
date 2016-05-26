@@ -7,9 +7,8 @@ const Bluetooth = {
 			includedProperties: ['read', 'notify'],
 			parseValue: value => {
 				value = value.buffer ? value : new DataView(value);
-				let integerValue = value.getUint8(0);
 				let result = {};
-				result.battery_level = integerValue;
+				result.battery_level = value.getUint8(0);
 				return result;
 			}
 		},
@@ -94,16 +93,13 @@ const Bluetooth = {
 				for(var i=0; i<value.byteLength; i++){
 					result.device_name+= String.fromCharCode(value.getUint8(i));
 				}
-				console.log('result object: ', result)
 				return result;
 			},
 			prepValue: value => {
-				// TACKLE THIS NEXT
-				console.log('value.length: ',value.length)
+				// TODO: determine max eligible byte length based on characteristic payload
 				let buffer = new ArrayBuffer(value.length);
 				let preppedValue = new DataView(buffer);
 				value.split('').forEach((char, i)=>{
-					console.log('setting to: ', char.charCodeAt(0))
 					preppedValue.setUint8(i, char.charCodeAt(0));
 				})
 				return preppedValue;
@@ -288,6 +284,231 @@ const Bluetooth = {
 			primaryServices: ['health_thermometer'],
 			includedProperties: ['read']
 		}
+		//environmental_sensing
+		//TODO: explore indications, writeAug, extProp and how to access
+		descriptor_value_changed: {
+			primaryServices: ['environmental_sensing'],
+			includedProperties: ['read'],
+		},
+		apparent_wind_direction: {
+			primaryServices: ['environmental_sensing'],
+			includedProperties: ['read', 'notify','writeAux', 'extProp'],
+			parseValue: value => {
+				value = value.buffer ? value : new DataView(value);
+				let result = {};
+				// TODO: test decimate resolution, -2 per protocol docs
+				result.apparent_wind_direction = value.getUint16(0,/*littleEndian=*/ true) * 0.01;
+				return result;
+			}
+		},
+		apparent_wind_speed: {
+			primaryServices: ['environmental_sensing'],
+			includedProperties: ['read', 'notify','writeAux', 'extProp'],
+			parseValue: value => {
+				value = value.buffer ? value : new DataView(value);
+				let result = {};
+				// TODO: test decimate resolution, -2 per protocol docs
+				result.apparent_wind_speed = value.getUint16(0,/*littleEndian=*/ true) * 0.01;
+				return result;
+			}
+		},
+		dew_point: {
+			primaryServices: ['environmental_sensing'],
+			includedProperties: ['read', 'notify','writeAux', 'extProp'],
+			parseValue: value => {
+				value = value.buffer ? value : new DataView(value);
+				let result = {};
+				result.dew_point = value.getInt8(0);
+				return result;
+			}
+		},
+		elevation: {
+			primaryServices: ['environmental_sensing'],
+			includedProperties: ['read', 'notify','writeAux', 'extProp'],
+			parseValue: value => {
+				value = value.buffer ? value : new DataView(value);
+				let result = {};
+				// elevation is a sint24, for which there is no native DataView prototype method
+				let b = new Uint8Array(value.buffer,0);
+				// get unsigned24....
+				let u = () =>{
+					if(/*littleEndian=*/ true) return (b[0] | (b[1] << 8) | (b[2] << 16));
+					else return  (b[2] | (b[1] << 8) | (b[0] << 16));
+				}
+				//... then evaluate as signed
+				result.elevation = u & 0x800000 ? u - 0x1000000 : u;
+				return result;
+			}
+		},
+		gust_factor: {
+			primaryServices: ['environmental_sensing'],
+			includedProperties: ['read', 'notify','writeAux', 'extProp'],
+			parseValue: value => {
+				value = value.buffer ? value : new DataView(value);
+				let result = {};
+				result.gust_factor = value.getUint8(0) * 0.1;
+				return result;
+			}
+		},
+		heat_index: {
+			primaryServices: ['environmental_sensing'],
+			includedProperties: ['read', 'notify','writeAux', 'extProp'],
+			parseValue: value => {
+				value = value.buffer ? value : new DataView(value);
+				let result = {};
+				result.heat_index = value.getInt8(0);
+				return result;
+			}
+		},
+		humidity: {
+			primaryServices: ['environmental_sensing'],
+			includedProperties: ['read', 'notify','writeAux', 'extProp'],
+			parseValue: value => {
+				value = value.buffer ? value : new DataView(value);
+				let result = {};
+				result.humidity = value.getUint16(0) * 0.01;
+				return result;
+			}
+		},
+		irradiance: {
+			primaryServices: ['environmental_sensing'],
+			includedProperties: ['read', 'notify','writeAux', 'extProp'],
+			parseValue: value => {
+				value = value.buffer ? value : new DataView(value);
+				let result = {};
+				result.irradiance = value.getUint16(0) * 0.1;
+				return result;
+			}
+		},
+		rainfall: {
+			primaryServices: ['environmental_sensing'],
+			includedProperties: ['read', 'notify','writeAux', 'extProp'],
+			parseValue: value => {
+				value = value.buffer ? value : new DataView(value);
+				let result = {};
+				result.rainfall = value.getUint16(0) * 0.001;
+				return result;
+			}
+		},
+		pressure: {
+			primaryServices: ['environmental_sensing'],
+			includedProperties: ['read', 'notify','writeAux', 'extProp'],
+			parseValue: value => {
+				value = value.buffer ? value : new DataView(value);
+				let result = {};
+				result.pressure = value.getUint32(0) * 0.1;
+				return result;
+			}
+		},
+		temperature: {
+			primaryServices: ['environmental_sensing'],
+			includedProperties: ['read', 'notify','writeAux', 'extProp'],
+			parseValue: value => {
+				value = value.buffer ? value : new DataView(value);
+				let result = {};
+				result.temperature = value.getInt16(0) * 0.01;
+				return result;
+			}
+		},
+		true_wind_direction: {
+			primaryServices: ['environmental_sensing'],
+			includedProperties: ['read', 'notify','writeAux', 'extProp'],
+			parseValue: value => {
+				value = value.buffer ? value : new DataView(value);
+				let result = {};
+				result.true_wind_direction = value.getUint16(0) * 0.01;
+				return result;
+			}
+		},
+		true_wind_speed: {
+			primaryServices: ['environmental_sensing'],
+			includedProperties: ['read', 'notify','writeAux', 'extProp'],
+			parseValue: value => {
+				value = value.buffer ? value : new DataView(value);
+				let result = {};
+				result.true_wind_speed = value.getUint16(0) * 0.01;
+				return result;
+			}
+		},
+		uv_index: {
+			primaryServices: ['environmental_sensing'],
+			includedProperties: ['read', 'notify','writeAux', 'extProp'],
+			parseValue: value => {
+				value = value.buffer ? value : new DataView(value);
+				let result = {};
+				result.uv_index = value.getUint8(0);
+				return result;
+			}
+		},
+		wind_chill: {
+			primaryServices: ['environmental_sensing'],
+			includedProperties: ['read', 'notify','writeAux', 'extProp'],
+			parseValue: value => {
+				value = value.buffer ? value : new DataView(value);
+				let result = {};
+				result.wind_chill = value.getInt8(0);
+				return result;
+			}
+		},
+		barometric_pressure_trend: {
+			primaryServices: ['environmental_sensing'],
+			includedProperties: ['read', 'notify','writeAux', 'extProp'],
+			parseValue: value => {
+				value = value.buffer ? value : new DataView(value);
+				let integerValue = value.getUint8(0);
+				let result = {};
+				switch (integerValue) {
+					case 0: result.barometric_pressure_trend = 'Unknown';
+					case 1: result.barometric_pressure_trend = 'Continuously falling';
+					case 2: result.barometric_pressure_trend = 'Continously rising';
+					case 3: result.barometric_pressure_trend = 'Falling, then steady';
+					case 4: result.barometric_pressure_trend = 'Rising, then steady';
+					case 5: result.barometric_pressure_trend = 'Falling before a lesser rise';
+					case 6: result.barometric_pressure_trend = 'Falling before a greater rise';
+					case 7: result.barometric_pressure_trend = 'Rising before a greater fall';
+					case 8: result.barometric_pressure_trend = 'Rising before a lesser fall';
+					case 9: result.barometric_pressure_trend = 'Steady';
+					default: result.barometric_pressure_trend = 'Could not resolve to trend';
+				}
+				return result;
+			}
+		},
+		magnetic_declination: {
+			primaryServices: ['environmental_sensing'],
+			includedProperties: ['read', 'notify','writeAux', 'extProp'],
+			parseValue: value => {
+				value = value.buffer ? value : new DataView(value);
+				let result = {};
+				result.magnetic_declination = value.getUint16(0) * 0.01;
+				return result;
+			}
+		},
+		magnetic_flux_density_2D: {
+			primaryServices: ['environmental_sensing'],
+			includedProperties: ['read', 'notify','writeAux', 'extProp'],
+			parseValue: value => {
+				value = value.buffer ? value : new DataView(value);
+				let result = {};
+				//TODO: need to find out if these values are stored at different byte addresses
+				result.magnetic_flux_density_x_axis = value.getInt16(0,/*littleEndian=*/ true) * 0.0000001;
+				result.magnetic_flux_density_y_axis = value.getInt16(2,/*littleEndian=*/ true) * 0.0000001;
+				return result;
+			}
+		},
+		magnetic_flux_density_3D: {
+			primaryServices: ['environmental_sensing'],
+			includedProperties: ['read', 'notify','writeAux', 'extProp'],
+			parseValue: value => {
+				value = value.buffer ? value : new DataView(value);
+				let result = {};
+				//TODO: need to find out if these values are stored at different byte addresses
+				//below assumes that values are stored at successive byte addresses
+				result.magnetic_flux_density_x_axis = value.getInt16(0,/*littleEndian=*/ true) * 0.0000001;
+				result.magnetic_flux_density_y_axis = value.getInt16(2,/*littleEndian=*/ true) * 0.0000001;
+				result.magnetic_flux_density_z_axis = value.getInt16(4,/*littleEndian=*/ true) * 0.0000001;
+				return result;
+			}
+		},
 	},
 	// all adopted services... passed in as argument to optional services filter
 	gattServiceList: ['alert_notification', 'automation_io', 'battery_service', 'blood_pressure',
