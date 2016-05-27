@@ -118,12 +118,49 @@ const Bluetooth = {
 		//glucose_feature characteristic
 		glucose_feature: {
 			primaryServices: ['glucose'],
-			includedProperties: ['read']
+			includedProperties: ['read'],
+			parseValue: value => {
+				value = value.buffer ? value : new DataView(value);
+				let result = {};
+				let flags = value.getUint16(0);
+				let result.low_battery_detection_supported = flags & 0x1;
+				let result.sensor_malfunction_detection_supported = flags & 0x2;
+				let result.sensor_sample_size_supported = flags & 0x4;
+				let result.sensor_strip_insertion_error_detection_supported = flags & 0x8;
+				let result.sensor_strip_type_error_detection_supported = flags & 0x10;
+				let result.sensor_result_highLow_detection_supported = flags & 0x20;
+				let result.sensor_temperature_highLow_detection_supported = flags & 0x40;
+				let result.sensor_read_interruption_detection_supported = flags & 0x80;
+				let result.general_device_fault_supported = flags & 0x100;
+				let result.time_fault_supported = flags & 0x200;
+				let result.multiple_bond_supported = flags & 0x400;
+				// Remaining flags reserved for future use
+				return result;
+			}
 		},
 		//http_entity_body characteristic
 		http_entity_body: {
 			primaryServices: ['http_proxy'],
 			includedProperties: ['read', 'write']
+		},
+		glucose_measurement: {
+			primaryServices: ['glucose'],
+			includedProperties: ['notify'],
+			parseValue: value => {
+				value = value.buffer ? value : new DataView(value);
+				let flags = value.getUint8(0);
+				let timeOffset = flags & 0x1;
+				let concentrationTypeSampleLoc = flags & 0x2;
+				let concentrationUnits = flags & 0x4;
+				let statusAnnunciation = flags & 0x8;
+				let contextInfomration = flags & 0x10;
+				let result = {};
+				let index = 1;
+
+				// TODO: THIS PARSING METHOD INCOMPLETE!!! AP TO FINISH!!!
+
+				return result;
+			}
 		},
 		//http_headers characteristic
 		http_headers: {
@@ -181,9 +218,9 @@ const Bluetooth = {
 			includedProperties: ['read'],
 			parseValue: value => {
 				value = value.buffer ? value : new DataView(value);
-				let integerValue = value.getUint8(0);
+				let val = value.getUint8(0);
 				let result = {};
-				switch (integerValue) {
+				switch (val) {
 					case 0: result.location = 'Other';
 					case 1: result.location = 'Chest';
 					case 2: result.location = 'Wrist';
@@ -233,10 +270,11 @@ const Bluetooth = {
 				let result = {};
 				// Iterate over DataView to retrieve values at each index where values are present
 				let index = 1;
+
 				// heartRate can be advertised in either 8- or 16-bit format
 				// increment index accordingly to provide correct address for retriving next possible value
 				if (rate16Bits) {
-					result.heartRate = value.getUint16(index, /*littleEndian=*/true);
+					result.heartRate = value.getUint16(index, /*little-endian=*/true);
 					index += 2;
 				} else {
 					result.heartRate = value.getUint8(index);
@@ -246,13 +284,13 @@ const Bluetooth = {
 					result.contactDetected = !!contactDetected;
 				}
 				if (energyPresent) {
-					result.energyExpended = value.getUint16(index, /*littleEndian=*/true);
+					result.energyExpended = value.getUint16(index, /*little-endian=*/true);
 					index += 2;
 				}
 				if (rrIntervalPresent) {
 					let rrIntervals = [];
 					for (; index + 1 < value.byteLength; index += 2) {
-						rrIntervals.push(value.getUint16(index, /*littleEndian=*/true));
+						rrIntervals.push(value.getUint16(index, /*little-endian=*/true));
 					}
 					result.rrIntervals = rrIntervals;
 				}
@@ -285,10 +323,10 @@ const Bluetooth = {
 			includedProperties: ['read']
 		}
 		//environmental_sensing
-		//TODO: explore indications, writeAug, extProp and how to access
+		//TODO: explore indications, writeAux, extProp and how to access
 		descriptor_value_changed: {
 			primaryServices: ['environmental_sensing'],
-			includedProperties: ['read'],
+			includedProperties: ['indicate', 'writeAux', 'extProp'],
 		},
 		apparent_wind_direction: {
 			primaryServices: ['environmental_sensing'],
@@ -296,8 +334,9 @@ const Bluetooth = {
 			parseValue: value => {
 				value = value.buffer ? value : new DataView(value);
 				let result = {};
-				// TODO: test decimate resolution, -2 per protocol docs
-				result.apparent_wind_direction = value.getUint16(0,/*littleEndian=*/ true) * 0.01;
+				// TODO: test decimal resolution, -2 per protocol docs
+				// FIXME: docs do not specify Endianness of values stored... assumed to be big-endian
+				result.apparent_wind_direction = value.getUint16(0) * 0.01;
 				return result;
 			}
 		},
@@ -308,7 +347,8 @@ const Bluetooth = {
 				value = value.buffer ? value : new DataView(value);
 				let result = {};
 				// TODO: test decimate resolution, -2 per protocol docs
-				result.apparent_wind_speed = value.getUint16(0,/*littleEndian=*/ true) * 0.01;
+				// FIXME: docs do not specify Endianness of values stored... assumed to be big-endian
+				result.apparent_wind_speed = value.getUint16(0) * 0.01;
 				return result;
 			}
 		},
@@ -328,11 +368,13 @@ const Bluetooth = {
 			parseValue: value => {
 				value = value.buffer ? value : new DataView(value);
 				let result = {};
-				// elevation is a sint24, for which there is no native DataView prototype method
+				// FIXME: elevation is a sint24, for which there is no native DataView prototype method
+				//        implementation below is untested
 				let b = new Uint8Array(value.buffer,0);
 				// get unsigned24....
 				let u = () =>{
-					if(/*littleEndian=*/ true) return (b[0] | (b[1] << 8) | (b[2] << 16));
+					// FIXME: docs do not specify Endianness of values stored... assumed to be big-endian
+					if(/*little-endian=*/ false) return (b[0] | (b[1] << 8) | (b[2] << 16));
 					else return  (b[2] | (b[1] << 8) | (b[0] << 16));
 				}
 				//... then evaluate as signed
@@ -366,6 +408,7 @@ const Bluetooth = {
 			parseValue: value => {
 				value = value.buffer ? value : new DataView(value);
 				let result = {};
+				// FIXME: docs do not specify Endianness of values stored... assumed to be big-endian
 				result.humidity = value.getUint16(0) * 0.01;
 				return result;
 			}
@@ -376,6 +419,7 @@ const Bluetooth = {
 			parseValue: value => {
 				value = value.buffer ? value : new DataView(value);
 				let result = {};
+				// FIXME: docs do not specify Endianness of values stored... assumed to be big-endian
 				result.irradiance = value.getUint16(0) * 0.1;
 				return result;
 			}
@@ -386,6 +430,7 @@ const Bluetooth = {
 			parseValue: value => {
 				value = value.buffer ? value : new DataView(value);
 				let result = {};
+				// FIXME: docs do not specify Endianness of values stored... assumed to be big-endian
 				result.rainfall = value.getUint16(0) * 0.001;
 				return result;
 			}
@@ -396,6 +441,7 @@ const Bluetooth = {
 			parseValue: value => {
 				value = value.buffer ? value : new DataView(value);
 				let result = {};
+				// FIXME: docs do not specify Endianness of values stored... assumed to be big-endian
 				result.pressure = value.getUint32(0) * 0.1;
 				return result;
 			}
@@ -406,6 +452,7 @@ const Bluetooth = {
 			parseValue: value => {
 				value = value.buffer ? value : new DataView(value);
 				let result = {};
+				// FIXME: docs do not specify Endianness of values stored... assumed to be big-endian
 				result.temperature = value.getInt16(0) * 0.01;
 				return result;
 			}
@@ -416,6 +463,7 @@ const Bluetooth = {
 			parseValue: value => {
 				value = value.buffer ? value : new DataView(value);
 				let result = {};
+				// FIXME: docs do not specify Endianness of values stored... assumed to be big-endian
 				result.true_wind_direction = value.getUint16(0) * 0.01;
 				return result;
 			}
@@ -426,6 +474,7 @@ const Bluetooth = {
 			parseValue: value => {
 				value = value.buffer ? value : new DataView(value);
 				let result = {};
+				// FIXME: docs do not specify Endianness of values stored... assumed to be big-endian
 				result.true_wind_speed = value.getUint16(0) * 0.01;
 				return result;
 			}
@@ -455,9 +504,9 @@ const Bluetooth = {
 			includedProperties: ['read', 'notify','writeAux', 'extProp'],
 			parseValue: value => {
 				value = value.buffer ? value : new DataView(value);
-				let integerValue = value.getUint8(0);
+				let val = value.getUint8(0);
 				let result = {};
-				switch (integerValue) {
+				switch (val) {
 					case 0: result.barometric_pressure_trend = 'Unknown';
 					case 1: result.barometric_pressure_trend = 'Continuously falling';
 					case 2: result.barometric_pressure_trend = 'Continously rising';
@@ -479,6 +528,7 @@ const Bluetooth = {
 			parseValue: value => {
 				value = value.buffer ? value : new DataView(value);
 				let result = {};
+				// FIXME: docs do not specify Endianness of values stored... assumed to be big-endian
 				result.magnetic_declination = value.getUint16(0) * 0.01;
 				return result;
 			}
@@ -489,9 +539,10 @@ const Bluetooth = {
 			parseValue: value => {
 				value = value.buffer ? value : new DataView(value);
 				let result = {};
-				//TODO: need to find out if these values are stored at different byte addresses
-				result.magnetic_flux_density_x_axis = value.getInt16(0,/*littleEndian=*/ true) * 0.0000001;
-				result.magnetic_flux_density_y_axis = value.getInt16(2,/*littleEndian=*/ true) * 0.0000001;
+				//FIXME: need to find out if these values are stored at different byte addresses
+				//       below assumes that values are stored at successive byte addresses
+				result.magnetic_flux_density_x_axis = value.getInt16(0,/*little-endian=*/ true) * 0.0000001;
+				result.magnetic_flux_density_y_axis = value.getInt16(2,/*little-endian=*/ true) * 0.0000001;
 				return result;
 			}
 		},
@@ -501,11 +552,11 @@ const Bluetooth = {
 			parseValue: value => {
 				value = value.buffer ? value : new DataView(value);
 				let result = {};
-				//TODO: need to find out if these values are stored at different byte addresses
-				//below assumes that values are stored at successive byte addresses
-				result.magnetic_flux_density_x_axis = value.getInt16(0,/*littleEndian=*/ true) * 0.0000001;
-				result.magnetic_flux_density_y_axis = value.getInt16(2,/*littleEndian=*/ true) * 0.0000001;
-				result.magnetic_flux_density_z_axis = value.getInt16(4,/*littleEndian=*/ true) * 0.0000001;
+				//FIXME: need to find out if these values are stored at different byte addresses
+				//       below assumes that values are stored at successive byte addresses
+				result.magnetic_flux_density_x_axis = value.getInt16(0,/*little-endian=*/ true) * 0.0000001;
+				result.magnetic_flux_density_y_axis = value.getInt16(2,/*little-endian=*/ true) * 0.0000001;
+				result.magnetic_flux_density_z_axis = value.getInt16(4,/*little-endian=*/ true) * 0.0000001;
 				return result;
 			}
 		},
