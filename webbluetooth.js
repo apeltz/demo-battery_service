@@ -384,17 +384,9 @@ const Bluetooth = {
 			parseValue: value => {
 				value = value.buffer ? value : new DataView(value);
 				let result = {};
-				// FIXME: elevation is a sint24, for which there is no native DataView prototype method
-				//        implementation below is untested
-				let b = new Uint8Array(value.buffer,0);
-				// get unsigned24....
-				let u = () =>{
-					// FIXME: docs do not specify Endianness of values stored... assumed to be big-endian
-					if(/*little-endian=*/ false) return (b[0] | (b[1] << 8) | (b[2] << 16));
-					else return  (b[2] | (b[1] << 8) | (b[0] << 16));
-				}
-				//... then evaluate as signed
-				result.elevation = u & 0x800000 ? u - 0x1000000 : u;
+				// elevation is a sint24, for which there is no native DataView prototype method
+				// FIXME: docs do not specify Endianness of values stored... assumed to be big-endian
+				result.elevation = value.getInt8(0) << 16 | value.getInt8(1) << 8 | value.getInt8(2)
 				return result;
 			}
 		},
