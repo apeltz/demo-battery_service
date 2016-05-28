@@ -153,11 +153,27 @@ const Bluetooth = {
 				let concentrationTypeSampleLoc = flags & 0x2;
 				let concentrationUnits = flags & 0x4;
 				let statusAnnunciation = flags & 0x8;
-				let contextInfomration = flags & 0x10;
+				let contextInformation = flags & 0x10;
 				let result = {};
 				let index = 1;
 
-				// TODO: THIS PARSING METHOD INCOMPLETE!!! AP TO FINISH!!!
+				// FIXME: THIS PARSING METHOD INCOMPLETE!!! AP TO FINISH!!!
+				if (timeOffset) {
+					result.time_offset = value.getInt16(index, /*little-endian=*/true);
+					index += 2;
+				}
+				if (concentrationTypeSampleLoc){
+					if(concentrationUnits){
+						// FIXME: CURRENTLY GETTING SIGNED INT 16, NEED SIGNED FLOAT 16
+						result.glucose_concentraiton_molPerL = value.getInt16(index, /*little-endian=*/true )
+						index += 2;
+					}
+					else {
+						// FIXME: CURRENTLY GETTING SIGNED INT 16, NEED SIGNED FLOAT 16
+						result.glucose_concentraiton_kgPerL = value.getInt16(index, /*little-endian=*/true )
+						index += 2;
+					}
+				}
 
 				return result;
 			}
@@ -557,6 +573,69 @@ const Bluetooth = {
 				result.magnetic_flux_density_x_axis = value.getInt16(0,/*little-endian=*/ true) * 0.0000001;
 				result.magnetic_flux_density_y_axis = value.getInt16(2,/*little-endian=*/ true) * 0.0000001;
 				result.magnetic_flux_density_z_axis = value.getInt16(4,/*little-endian=*/ true) * 0.0000001;
+				return result;
+			}
+		},
+		tx_power_level: {
+			primaryServices: ['tx_power'],
+			includedProperties: ['read'],
+			parseValue: value => {
+				value = value.buffer ? value : new DataView(value);
+				let result = {};
+				result.tx_power_level = value.getInt8(0);
+				return result;
+			}
+		},
+		weight_scale_feature: {
+			primaryServices: ['weight_scale'],
+			includedProperties: ['read'],
+			parseValue: value => {
+				value = value.buffer ? value : new DataView(value);
+				let result = {};
+				let flags = value.getInt32(0);
+				let result.time_stamp_supported = flags & 0x1;
+				let result.multiple_sensors_supported = flags & 0x2;
+				let result.BMI_supported = flags & 0x4;
+				switch (flags & 0x78 >> 3) {
+					case 0: result.weight_measurement_resolution = 'Not specified';
+					case 1: result.weight_measurement_resolution = 'Resolution of 0.5 kg or 1 lb';
+					case 2: result.weight_measurement_resolution = 'Resolution of 0.2 kg or 0.5 lb';
+					case 3: result.weight_measurement_resolution = 'Resolution of 0.1 kg or 0.2 lb';
+					case 4: result.weight_measurement_resolution = 'Resolution of 0.05 kg or 0.1 lb';
+					case 5: result.weight_measurement_resolution = 'Resolution of 0.02 kg or 0.05 lb';
+					case 6: result.weight_measurement_resolution = 'Resolution of 0.01 kg or 0.02 lb';
+					case 7: result.weight_measurement_resolution = 'Resolution of 0.005 kg or 0.01 lb';
+					default: result.weight_measurement_resolution = 'Could not resolve';
+				}
+				switch (flags & 0x380 >> 7) {
+					case 0: result.height_measurement_resolution = 'Not specified';
+					case 1: result.height_measurement_resolution = 'Resolution of 0.1 meter or 1 inch';
+					case 2: result.height_measurement_resolution = 'Resolution of 0.005 meter or 0.5 inch';
+					case 3: result.height_measurement_resolution = 'Resolution of 0.001 meter or 0.1 inch';
+					default: result.height_measurement_resolution = 'Could not resolve';
+				}
+				// Remaining flags reserved for future use
+				return result;
+			}
+		},
+		csc_measurement: {
+			primaryServices: ['cycling_speed_and_cadence'],
+			includedProperties: ['notify'],
+			parseValue: value => {
+				value = value.buffer ? value : new DataView(value);
+
+				let flags = value.getUint8(0);
+				let wheelRevolution = flags & 0x1;
+				let crankRevolution = flags & 0x2;
+
+				let index = 1;
+
+				if(wheelRevolution) {
+					result.cumulative_wheel_revolutions =
+				}
+
+				let result = {};
+				result.tx_power_level = value.getInt8(0);
 				return result;
 			}
 		},
