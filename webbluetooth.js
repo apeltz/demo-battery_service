@@ -386,7 +386,7 @@ const Bluetooth = {
 				let result = {};
 				// elevation is a sint24, for which there is no native DataView prototype method
 				// FIXME: docs do not specify Endianness of values stored... assumed to be big-endian
-				result.elevation = value.getInt8(0) << 16 | value.getInt8(1) << 8 | value.getInt8(2)
+				result.elevation = value.getInt8(0) << 16 | value.getInt8(1) << 8 | value.getInt8(2);
 				return result;
 			}
 		},
