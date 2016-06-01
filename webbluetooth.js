@@ -419,6 +419,7 @@ class Bluetoothdevice {
 			*/
 			 var characteristicObj = bluetooth.gattCharacteristicsMapping[characteristic_name];
 			 var primary_service_name = characteristicObj.primaryServices[0];
+			 console.log(characteristicObj, primary_service_name);
 			 /**
 				* Check to see if requested characteristic has been cached from a previous
 				* interaction of any type to characteristic_name and return if found
