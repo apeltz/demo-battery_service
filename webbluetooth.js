@@ -383,7 +383,7 @@ class Bluetoothdevice {
 				}
 				// Check formatting of propertiesArr and throw error if improperly formatted
 				// TODO: Add validation and error handling for all properties in propertiesArr
-				if (propertiesArr.constuctor !== Array || !propertiesArr.length) {
+				if (propertiesArr.constructor !== Array || !propertiesArr.length) {
 					return errorHandler(`improper_properties_format`,null, propertiesArr);
 				}
 				/**
