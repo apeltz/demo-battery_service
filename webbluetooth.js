@@ -809,7 +809,7 @@ const Bluetooth = {
 		temperature_type: {
 			primaryServices: ['health_thermometer'],
 			includedProperties: ['read']
-		}
+		},
 		//environmental_sensing
 		//FIXME: explore indications, writeAux, extProp and how to access
 		descriptor_value_changed: {
