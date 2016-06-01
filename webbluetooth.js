@@ -485,16 +485,16 @@ const bluetooth = {
 	gattCharacteristicsMapping: {
 
 		// battery_level characteristic
-		battery_level: {
-			primaryServices: ['battery_service'],
-			includedProperties: ['read', 'notify'],
-			parseValue: value => {
-				value = value.buffer ? value : new DataView(value);
-				let result = {};
-				result.battery_level = value.getUint8(0);
-				return result;
-			}
-		},
+		// battery_level: {
+		// 	primaryServices: ['battery_service'],
+		// 	includedProperties: ['read', 'notify'],
+		// 	parseValue: value => {
+		// 		value = value.buffer ? value : new DataView(value);
+		// 		let result = {};
+		// 		result.battery_level = value.getUint8(0);
+		// 		return result;
+		// 	}
+		// },
 		//blood_pressure_feature characteristic
 		blood_pressure_feature: {
 			primaryServices: ['blood_pressure'],
