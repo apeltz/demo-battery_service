@@ -164,7 +164,7 @@ class Bluetoothdevice {
 				* is present, return an object with the returned value from readValue() as
 				* the only parameter.
 				*/
-				console.log('charObj.PV: ', characteristicObj.parseValue(value))
+				console.log('charObj.PV',characteristicObj.parseValue)
 				let returnObj = characteristicObj.parseValue ? characteristicObj.parseValue(value):{};
 				// Always include the raw value returned from readValue() in the object returned
 				returnObj.rawValue = value;
@@ -207,7 +207,9 @@ class Bluetoothdevice {
 			}
 		// Call returnCharacteristic to retrieve characteristic from which to read
 		// FIXME: Check bound context of 'this' here
-		this.returnCharacteristic(characteristic_name)
+		return new Promise((resolve,reject)=>{
+			return resolve(this.returnCharacteristic(characteristic_name))
+		})
 			.then(characteristic => {
 				/**
 				* Check characteristic object to see if prepping method exists. If present,
@@ -263,7 +265,9 @@ class Bluetoothdevice {
 			}
 		// Call returnCharacteristic to retrieve characteristic from which to read
 		// FIXME: Check bound context of 'this' here
-		this.returnCharacteristic(characteristic_name)
+		return new Promise((resolve,reject)=>{
+			return resolve(this.returnCharacteristic(characteristic_name))
+		})
 			.then(characteristic =>{
 				// Start notifications from characteristic and add event listener
 				characteristic.startNotifications()
@@ -319,7 +323,9 @@ class Bluetoothdevice {
 			if(this.cache[primary_service_name][characteristic_name].notifying) {
 				// Call returnCharacteristic to retrieve characteristic from which to read
 				// FIXME: Check bound context of 'this' here
-				this.returnCharacteristic(characteristic_name)
+				return new Promise((resolve,reject)=>{
+					return resolve(this.returnCharacteristic(characteristic_name))
+				})
 					.then(characteristic =>{
 						characteristic.stopNotifications()
 						.then(() => {
