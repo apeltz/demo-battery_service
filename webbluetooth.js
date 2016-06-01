@@ -14,7 +14,7 @@
 		* @return {Object} Returns a new instance of Device
 		*
 		*/
-class BluetoothDevice {
+class Bluetoothdevice {
 
 	constructor(requestParams) {
 		this.requestParams = requestParams;
@@ -479,7 +479,7 @@ const Bluetooth = {
 			includedProperties: ['read', 'notify'],
 			parseValue: value => {
 				value = value.buffer ? value : new DataView(value);
-				let result = {};
+				var result = {};
 				result.battery_level = value.getUint8(0);
 				return result;
 			}
@@ -560,7 +560,7 @@ const Bluetooth = {
 			includedProperties: ['read', 'write'],
 			parseValue: value => {
 				value = value.buffer ? value : new DataView(value);
-				let result = {};
+				var result = {};
 				result.device_name = '';
 				for(var i=0; i<value.byteLength; i++){
 					result.device_name+= String.fromCharCode(value.getUint8(i));
@@ -593,7 +593,7 @@ const Bluetooth = {
 			includedProperties: ['read'],
 			parseValue: value => {
 				value = value.buffer ? value : new DataView(value);
-				let result = {};
+				var result = {};
 				let flags = value.getUint16(0);
 				let result.low_battery_detection_supported = flags & 0x1;
 				let result.sensor_malfunction_detection_supported = flags & 0x2;
@@ -626,7 +626,7 @@ const Bluetooth = {
 				let concentrationUnits = flags & 0x4;
 				let statusAnnunciation = flags & 0x8;
 				let contextInformation = flags & 0x10;
-				let result = {};
+				var result = {};
 				let index = 1;
 
 				// FIXME: THIS PARSING METHOD INCOMPLETE!!! AP TO FINISH!!!
@@ -707,7 +707,7 @@ const Bluetooth = {
 			parseValue: value => {
 				value = value.buffer ? value : new DataView(value);
 				let val = value.getUint8(0);
-				let result = {};
+				var result = {};
 				switch (val) {
 					case 0: result.location = 'Other';
 					case 1: result.location = 'Chest';
@@ -755,7 +755,7 @@ const Bluetooth = {
 				let energyPresent = flags & 0x8;
 				let rrIntervalPresent = flags & 0x10;
 				// Object to store values to be returned to startNotifications method
-				let result = {};
+				var result = {};
 				// Iterate over DataView to retrieve values at each index where values are present
 				let index = 1;
 
@@ -821,7 +821,7 @@ const Bluetooth = {
 			includedProperties: ['read', 'notify','writeAux', 'extProp'],
 			parseValue: value => {
 				value = value.buffer ? value : new DataView(value);
-				let result = {};
+				var result = {};
 				// TODO: test decimal resolution, -2 per protocol docs
 				// FIXME: docs do not specify Endianness of values stored... assumed to be big-endian
 				result.apparent_wind_direction = value.getUint16(0) * 0.01;
@@ -833,7 +833,7 @@ const Bluetooth = {
 			includedProperties: ['read', 'notify','writeAux', 'extProp'],
 			parseValue: value => {
 				value = value.buffer ? value : new DataView(value);
-				let result = {};
+				var result = {};
 				// TODO: test decimate resolution, -2 per protocol docs
 				// FIXME: docs do not specify Endianness of values stored... assumed to be big-endian
 				result.apparent_wind_speed = value.getUint16(0) * 0.01;
@@ -845,7 +845,7 @@ const Bluetooth = {
 			includedProperties: ['read', 'notify','writeAux', 'extProp'],
 			parseValue: value => {
 				value = value.buffer ? value : new DataView(value);
-				let result = {};
+				var result = {};
 				result.dew_point = value.getInt8(0);
 				return result;
 			}
@@ -855,7 +855,7 @@ const Bluetooth = {
 			includedProperties: ['read', 'notify','writeAux', 'extProp'],
 			parseValue: value => {
 				value = value.buffer ? value : new DataView(value);
-				let result = {};
+				var result = {};
 				// elevation is a sint24, for which there is no native DataView prototype method
 				// FIXME: docs do not specify Endianness of values stored... assumed to be big-endian
 				result.elevation = value.getInt8(0) << 16 | value.getInt8(1) << 8 | value.getInt8(2);
@@ -867,7 +867,7 @@ const Bluetooth = {
 			includedProperties: ['read', 'notify','writeAux', 'extProp'],
 			parseValue: value => {
 				value = value.buffer ? value : new DataView(value);
-				let result = {};
+				var result = {};
 				result.gust_factor = value.getUint8(0) * 0.1;
 				return result;
 			}
@@ -877,7 +877,7 @@ const Bluetooth = {
 			includedProperties: ['read', 'notify','writeAux', 'extProp'],
 			parseValue: value => {
 				value = value.buffer ? value : new DataView(value);
-				let result = {};
+				var result = {};
 				result.heat_index = value.getInt8(0);
 				return result;
 			}
@@ -887,7 +887,7 @@ const Bluetooth = {
 			includedProperties: ['read', 'notify','writeAux', 'extProp'],
 			parseValue: value => {
 				value = value.buffer ? value : new DataView(value);
-				let result = {};
+				var result = {};
 				// FIXME: docs do not specify Endianness of values stored... assumed to be big-endian
 				result.humidity = value.getUint16(0) * 0.01;
 				return result;
@@ -898,7 +898,7 @@ const Bluetooth = {
 			includedProperties: ['read', 'notify','writeAux', 'extProp'],
 			parseValue: value => {
 				value = value.buffer ? value : new DataView(value);
-				let result = {};
+				var result = {};
 				// FIXME: docs do not specify Endianness of values stored... assumed to be big-endian
 				result.irradiance = value.getUint16(0) * 0.1;
 				return result;
@@ -909,7 +909,7 @@ const Bluetooth = {
 			includedProperties: ['read', 'notify','writeAux', 'extProp'],
 			parseValue: value => {
 				value = value.buffer ? value : new DataView(value);
-				let result = {};
+				var result = {};
 				// FIXME: docs do not specify Endianness of values stored... assumed to be big-endian
 				result.rainfall = value.getUint16(0) * 0.001;
 				return result;
@@ -920,7 +920,7 @@ const Bluetooth = {
 			includedProperties: ['read', 'notify','writeAux', 'extProp'],
 			parseValue: value => {
 				value = value.buffer ? value : new DataView(value);
-				let result = {};
+				var result = {};
 				// FIXME: docs do not specify Endianness of values stored... assumed to be big-endian
 				result.pressure = value.getUint32(0) * 0.1;
 				return result;
@@ -931,7 +931,7 @@ const Bluetooth = {
 			includedProperties: ['read', 'notify','writeAux', 'extProp'],
 			parseValue: value => {
 				value = value.buffer ? value : new DataView(value);
-				let result = {};
+				var result = {};
 				// FIXME: docs do not specify Endianness of values stored... assumed to be big-endian
 				result.temperature = value.getInt16(0) * 0.01;
 				return result;
@@ -942,7 +942,7 @@ const Bluetooth = {
 			includedProperties: ['read', 'notify','writeAux', 'extProp'],
 			parseValue: value => {
 				value = value.buffer ? value : new DataView(value);
-				let result = {};
+				var result = {};
 				// FIXME: docs do not specify Endianness of values stored... assumed to be big-endian
 				result.true_wind_direction = value.getUint16(0) * 0.01;
 				return result;
@@ -953,7 +953,7 @@ const Bluetooth = {
 			includedProperties: ['read', 'notify','writeAux', 'extProp'],
 			parseValue: value => {
 				value = value.buffer ? value : new DataView(value);
-				let result = {};
+				var result = {};
 				// FIXME: docs do not specify Endianness of values stored... assumed to be big-endian
 				result.true_wind_speed = value.getUint16(0) * 0.01;
 				return result;
@@ -964,7 +964,7 @@ const Bluetooth = {
 			includedProperties: ['read', 'notify','writeAux', 'extProp'],
 			parseValue: value => {
 				value = value.buffer ? value : new DataView(value);
-				let result = {};
+				var result = {};
 				result.uv_index = value.getUint8(0);
 				return result;
 			}
@@ -974,7 +974,7 @@ const Bluetooth = {
 			includedProperties: ['read', 'notify','writeAux', 'extProp'],
 			parseValue: value => {
 				value = value.buffer ? value : new DataView(value);
-				let result = {};
+				var result = {};
 				result.wind_chill = value.getInt8(0);
 				return result;
 			}
@@ -985,7 +985,7 @@ const Bluetooth = {
 			parseValue: value => {
 				value = value.buffer ? value : new DataView(value);
 				let val = value.getUint8(0);
-				let result = {};
+				var result = {};
 				switch (val) {
 					case 0: result.barometric_pressure_trend = 'Unknown';
 					case 1: result.barometric_pressure_trend = 'Continuously falling';
@@ -1007,7 +1007,7 @@ const Bluetooth = {
 			includedProperties: ['read', 'notify','writeAux', 'extProp'],
 			parseValue: value => {
 				value = value.buffer ? value : new DataView(value);
-				let result = {};
+				var result = {};
 				// FIXME: docs do not specify Endianness of values stored... assumed to be big-endian
 				result.magnetic_declination = value.getUint16(0) * 0.01;
 				return result;
@@ -1018,7 +1018,7 @@ const Bluetooth = {
 			includedProperties: ['read', 'notify','writeAux', 'extProp'],
 			parseValue: value => {
 				value = value.buffer ? value : new DataView(value);
-				let result = {};
+				var result = {};
 				//FIXME: need to find out if these values are stored at different byte addresses
 				//       below assumes that values are stored at successive byte addresses
 				result.magnetic_flux_density_x_axis = value.getInt16(0,/*little-endian=*/ true) * 0.0000001;
@@ -1031,7 +1031,7 @@ const Bluetooth = {
 			includedProperties: ['read', 'notify','writeAux', 'extProp'],
 			parseValue: value => {
 				value = value.buffer ? value : new DataView(value);
-				let result = {};
+				var result = {};
 				//FIXME: need to find out if these values are stored at different byte addresses
 				//       below assumes that values are stored at successive byte addresses
 				result.magnetic_flux_density_x_axis = value.getInt16(0,/*little-endian=*/ true) * 0.0000001;
@@ -1045,7 +1045,7 @@ const Bluetooth = {
 			includedProperties: ['read'],
 			parseValue: value => {
 				value = value.buffer ? value : new DataView(value);
-				let result = {};
+				var result = {};
 				result.tx_power_level = value.getInt8(0);
 				return result;
 			}
@@ -1055,7 +1055,7 @@ const Bluetooth = {
 			includedProperties: ['read'],
 			parseValue: value => {
 				value = value.buffer ? value : new DataView(value);
-				let result = {};
+				var result = {};
 				let flags = value.getInt32(0);
 				let result.time_stamp_supported = flags & 0x1;
 				let result.multiple_sensors_supported = flags & 0x2;
@@ -1098,7 +1098,7 @@ const Bluetooth = {
 					result.cumulative_wheel_revolutions =
 				}
 
-				let result = {};
+				var result = {};
 				result.tx_power_level = value.getInt8(0);
 				return result;
 			}

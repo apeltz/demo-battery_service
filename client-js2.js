@@ -15,7 +15,7 @@ $('#connect').on('touchstart click', (event) => {
   if (services) filterObj['services'] = services;
   if (name) filterObj['name'] = name;
   if (prefix) filterObj['namePrefix'] = prefix;
-  blue = new BluetoothDevice(filterObj);
+  blue = new Bluetoothdevice(filterObj);
   blue.connect().then(device => {
     $('#load').hide();
     $('#connect').hide();
