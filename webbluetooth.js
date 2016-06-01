@@ -149,7 +149,9 @@ class Bluetoothdevice {
 			}
 		// Call returnCharacteristic to retrieve characteristic from which to read
 		// FIXME: Check bound context of 'this' here
-		this.returnCharacteristic(characteristic_name)
+			 return new Promise((resolve,reject)=>{
+				 return resolve(this.returnCharacteristic(characteristic_name))
+			 })
 			.then(characteristic =>{
 				return characteristic.readValue();
 			})
