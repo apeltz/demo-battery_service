@@ -1,3 +1,475 @@
+  /**
+		* @method connect - Calls navigator.bluetooth.requestDevice
+		*		(?? If it has not yet been called already??), then calls device.gatt.connect
+		*
+		*	@param {Object} filters Collection of filters for devices
+		*					all filters are optional, but at least 1 is required
+		*					.name {string}
+		*					.namePrefix {string}
+		*					.uuid {string}
+		*					.services {array}
+		*					.optionalServices {array} - defaults to all available services,
+		*							use an empty array to get no optional services
+		*
+		* @return {Object} Returns a new instance of Device
+		*
+		*/
+class BluetoothDevice {
+
+	constructor(requestParams) {
+		this.requestParams = requestParams;
+		this.apiDevice = null;
+		this.apiServer = null;
+		this.cache = {};
+	}
+
+	/**
+		* checks apiDevice to see whether device is connected
+		*/
+	connected() {
+		if(!this.apiDevice) return errorHandler('no_device');
+		return this.apiDevice.gatt.connected;
+	}
+
+	/**
+		* Establishes a new GATT connection w/ the device
+		* 	and stores the return of the promise as this.apiServer
+		*
+	  */
+	connect() {
+		const filters = this.requestParams;
+		const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+		if (Object.keys(filters).length) {
+			const requestParams = {
+				filters: [],
+			};
+			// FIXME: validate name and throw error if not valid - 'string'
+			if (filters.name) requestParams.filters.push({ name: filters.name });
+			// FIXME: validate name and throw error if not valid - 'string'
+			if (filters.namePrefix) requestParams.filters.push({ namePrefix: filters.namePrefix });
+			if (filters.uuid) {
+				if (!filters.uuid.match(uuidRegex)) {
+					errorHandler('uuid_error');
+				}
+				else {
+					requestParams.filters.push({ uuid: filters.uuid });
+				}
+			}
+			if (filters.services) {
+				let services =[];
+				filters.services.forEach(service => {
+					if (!bluetooth.gattServiceList.includes(service)) {
+						console.warn(`${service} is not a valid service. Please check the service name.`);
+					}
+					else {
+						services.push(service);
+					}
+				});
+				requestParams.filters.push({ services: services });
+			}
+			if (filters.optional_services) {
+				filters.optional_services.forEach(service => {
+					if(!bluetooth.gattServiceList.includes(service)) bluetooth.gattServiceList.push(service);
+				});
+			}
+
+			requestParams.optionalServices = bluetooth.gattServiceList;
+
+			// TODO: think about what we want to return here.
+			return navigator.bluetooth.requestDevice(requestParams).then(device => {
+				this.apiDevice = device;
+				return device.gatt.connect()
+			})
+			.then(server => {
+				this.apiServer = server;
+				return server;
+			})
+			.catch(err => {
+				// FIXME: parse error as it can be a result of a few things: 1. user cancelled, 2. 'unknown connection error'
+				errorHandler('user_cancelled',err);
+				return;
+			});
+		} else {
+			return errorHandler('no_filters');
+		}
+	};
+
+	/**
+	 * Attempts to disconnect from BT device
+	 *
+	 * @Return {Boolean} successfully disconnected
+	 *					returns an error.
+	 * Disconnect from device if the connected property in the bluetooth object
+	 * evaluates to true otherwise, disconnecting issue throws an error.
+	 */
+	disconnect() {
+        if (this.apiServer.connected) {
+          this.apiServer.disconnect();
+					//TODO: check if this is asynchronous when retesting.
+          if (!this.apiServer.connected) {
+            return true;
+          }
+					return errorHandler('issue_disconnecting');
+        }
+				return errorHandler('not_connected');
+	}
+
+	/**
+	 * Gets requested characteristic before attempting to read value of that characteristic
+	 * and returning an object with the parsed value (if characterisitc is fully supported)
+	 * and raw value (provided regardles of whether device is fully supported or not).
+	 *
+	 * @param {string} characteristic_name - GATT characteristic  name
+	 * @return {Object} An object that includes key-value pairs for each of the properties
+	 *									successfully read and parsed from the device, as well as the
+	 *									raw value object returned by a native readValue request to the
+	 *									device characteristic.
+	 */
+	getValue(characteristic_name) {
+		/**
+		* Check to see if characteristic exists in bluetooth.gattCharacteristicsMapping
+		* and throw error if not found.
+		*/
+		if(!bluetooth.gattCharacteristicsMapping[characteristic_name]) {
+			return errorHandler('characteristic_error', null, characteristic_name);
+		}
+		// Retrieve characteristic object from bluetooth.gattCharacteristicsMapping
+		var characteristicObj = bluetooth.gattCharacteristicsMapping[characteristic_name];
+		/**
+		* Check characteristic object to see if support for read property is provided.
+		* If not provided, proceed with attempt to read value of characteristic but
+		* provide warning indicating such.
+		*/
+		if(!characteristicObj.includedProperties.includes('read')) {
+			console.warn(`Attempting to access read property of ${characteristic_name},
+										which is not a included as a supported property of the
+										characteristic. Attempt will resolve with an object including
+										only a rawValue property with the native API return
+										for an attempt to readValue() of ${characteristic_name}.`);
+			}
+		// Call returnCharacteristic to retrieve characteristic from which to read
+		// FIXME: Check bound context of 'this' here
+		this.returnCharacteristic(characteristic_name)
+			.then(characteristic =>{
+				return characteristic.readValue();
+			})
+			.then(value =>{
+				/**
+				* Check characteristic object to see if parsing method exists. If present,
+				* call the parseValue method with value returned from readValue() as the
+				* argument, and add returned value from readValue() as another parameter to
+				* the returned object from parseValue before returning. If no parsing method
+				* is present, return an object with the returned value from readValue() as
+				* the only parameter.
+				*/
+				let returnObj = characteristicObj.parseValue ? characteristicObj.parseValue(value):{};
+				// Always include the raw value returned from readValue() in the object returned
+				returnObj.rawValue = value;
+				return returnObj;
+			})
+			.catch(err => {
+				return errorHandler('read_error',err);
+			});
+	} // End getValue
+
+	/**
+	 * Attempts to write a given value to the device for a given characteristic
+	 •
+	 * @param {String} characteristic_name - GATT characteristic  name
+	 * @param {String or Number} value - String or Number that will be written to
+	 																		 the requested device characteristic
+	 * FIXME: What do we want to return?
+	 * @return {Boolean} - Result of attempt to write characteristic where true === successfully written
+	 */
+	writeValue(characteristic_name, value){
+		/**
+		* Check to see if characteristic exists in bluetooth.gattCharacteristicsMapping
+		* and throw error if not found.
+		*/
+		if(!bluetooth.gattCharacteristicsMapping[characteristic_name]) {
+			return errorHandler('characteristic_error', null, characteristic_name);
+		}
+		// Retrieve characteristic object from bluetooth.gattCharacteristicsMapping
+		var characteristicObj = bluetooth.gattCharacteristicsMapping[characteristic_name];
+		/**
+		* Check characteristic object to see if support for write property is provided.
+		* If not provided, proceed with attempt to write value to characteristic but
+		* provide warning indicating such.
+		*/
+		if(!characteristicObj.includedProperties.includes('write')) {
+			console.warn(`Attempting to access write property of ${characteristic_name},
+										which is not a included as a supported property of the
+										characteristic. Attempt will resolve with native API return
+										for an attempt to writeValue(${value}) to ${characteristic_name}.`);
+			}
+		// Call returnCharacteristic to retrieve characteristic from which to read
+		// FIXME: Check bound context of 'this' here
+		this.returnCharacteristic(characteristic_name)
+			.then(characteristic => {
+				/**
+				* Check characteristic object to see if prepping method exists. If present,
+				* call the prepValue method with the provided value as the argument. If
+				* no prepping method is present, attempt to call writeValue() to the
+				* characteristic with the provided value as the the argument.
+				*/
+				value = characteristicObj.prepValue ? characteristicObj.prepValue(value):value;
+				return characteristic.writeValue(value);
+			})
+			.then(changedChar => {
+				//FIXME: what do we want return? check how this resolves (i.e Undefined?).
+				return value;
+			})
+			.catch(err => {
+				return errorHandler('write_error',err,characteristic_name);
+			})
+	} // End writeValue
+
+	/**
+	* Attempts to start notifications for changes to device values and adds event
+	* listener to listen for events to which a provided callback will be applied
+	*
+	* @param {String} characteristic_name - GATT characteristic name
+	* @param {Function} func - callback function to apply to each event while
+															notifications are active
+	* FIXME: What do we want to return? The event returned is visible in the callback provided... so maybe nothing?
+	* @return TBD
+	*
+	*/
+	startNotifications(characteristic_name, func){
+		/**
+		* Check to see if characteristic exists in bluetooth.gattCharacteristicsMapping
+		* and throw error if not found.
+		*/
+		if(!bluetooth.gattCharacteristicsMapping[characteristic_name]) {
+			return errorHandler('characteristic_error', null, characteristic_name);
+		}
+		// Retrieve characteristic object and primary service from bluetooth.gattCharacteristicsMapping
+		var characteristicObj = bluetooth.gattCharacteristicsMapping[characteristic_name];
+		var primary_service_name = characteristicObj.primaryServices[0];
+		/**
+		* Check characteristic object to see if support for notify property is provided.
+		* If not provided, proceed with attempt to start notifications from characteristic but
+		* provide warning indicating such.
+		*/
+		if(!characteristicObj.includedProperties.includes('notify')) {
+			console.warn(`Attempting to access notify property of ${characteristic_name},
+										which is not a included as a supported property of the
+										characteristic. Attempt will resolve with an object including
+										only a rawValue property with the native API return
+										for an attempt to startNotifications() for ${characteristic_name}.`);
+			}
+		// Call returnCharacteristic to retrieve characteristic from which to read
+		// FIXME: Check bound context of 'this' here
+		this.returnCharacteristic(characteristic_name)
+			.then(characteristic =>{
+				// Start notifications from characteristic and add event listener
+				characteristic.startNotifications()
+				.then(() => {
+					/**
+					* After successfully starting notifications from characteristic, update
+					* cache to reflect current notification status.
+					*/
+					this.cache[primary_service_name][characteristic_name].notifying = true;
+					// Add listener to subscribe to notifications from device
+					return characteristic.addEventListener('characteristicvaluechanged', event => {
+						/**
+						* Check characteristic object to see if parsing method exists. If present,
+						* call the parseValue method with value attached to the event object,
+						* and add the raw event object as another parameter to the returned
+						* object from parseValue before returning. If no parsing method is
+						* present, return an object with the raw event object as the only parameter.
+						*/
+						let eventObj = characteristicObj.parseValue ? characteristicObj.parseValue(event.target.value):{};
+						// Always include the raw event object in the object returned
+						eventObj.rawValue = event;
+						func(eventObj);
+					});
+				})
+				.catch(err => {
+					return errorHandler('start_notifications_error', err, characteristic_name);
+				});
+			})
+	} // End startNotifications
+
+	/**
+	* Attempts to stop previously started notifications for a provided characteristic
+	*
+	* @param {String} characteristic_name - GATT characteristic name
+	* FIXME: What do we want to return?
+	* @return {Boolean} - Result of attempt to stop notifications where true === successfully written
+	*/
+	stopNotifications(characteristic_name) {
+			/**
+			* Check to see if characteristic exists in bluetooth.gattCharacteristicsMapping
+			* and throw error if not found.
+			*/
+			if(!bluetooth.gattCharacteristicsMapping[characteristic_name]) {
+				return errorHandler('characteristic_error', null, characteristic_name);
+			}
+			// Retrieve characteristic object and primary service from bluetooth.gattCharacteristicsMapping
+			var characteristicObj = bluetooth.gattCharacteristicsMapping[characteristic_name];
+			var primary_service_name = characteristicObj.primaryServices[0];
+			/**
+			* Check characteristic object to see if notifications are currently active
+			* and attempt to stop notifications if active, otherwise throw error.
+			*/
+			if(this.cache[primary_service_name][characteristic_name].notifying) {
+				// Call returnCharacteristic to retrieve characteristic from which to read
+				// FIXME: Check bound context of 'this' here
+				this.returnCharacteristic(characteristic_name)
+					.then(characteristic =>{
+						characteristic.stopNotifications()
+						.then(() => {
+							/**
+							* After successfully stopping notifications from characteristic, update
+							* cache to reflect current notification status.
+							*/
+							this.cache[primary_service_name][characteristic_name].notifying = false;
+							// FIXME: what do we want to return here?
+							return true;
+						})
+						.catch(err => {
+							return errorHandler('stop_notifications_error', err, characteristic_name);
+						})
+					})
+			}
+			else {
+				errorHandler('stop_notifications_not_notifying',null,characteristic_name);
+			}
+		} // End stopNotifications
+
+		/**
+		* Adds a new characteristic object to  bluetooth.gattCharacteristicsMapping
+		*
+		* @param {String} characteristic_name - GATT characteristic name or other characteristic
+		* @param {String} primary_service_name - GATT primary service name or other parent service of characteristic
+		* @param {Array} propertiesArr - Array of GATT properties as Strings
+		* FIXME: What do we want to return?
+		* @return {Boolean} - Result of attempt to add characteristic where true === successfully added
+		*/
+		addCharacteristic(characteristic_name, primary_service_name, propertiesArr) {
+			/**
+			* Check to see if characteristic exists in bluetooth.gattCharacteristicsMapping
+			* and throw error if found.
+			*/
+			if(bluetooth.gattCharacteristicsMapping[characteristic_name]) {
+				return errorHandler('add_characteristic_exists_error', null, characteristic_name);
+			}
+			// Check formatting of characteristic_name and throw error if improperly formatted
+			if (!characteristic_name || characteristic_name.constructor !== String || !characteristic_name.length){
+				return errorHandler(`improper_characteristic_format`,null, characteristic_name);
+			}
+			/**
+			* If characteristic does not exist in bluetooth.gattCharacteristicsMapping
+			* validate presence and format of other required parameters. Throw errors if
+			* other required parameters are missing or improperly formatted.
+			*/
+			if (!bluetooth.gattCharacteristicsMapping[characteristic_name]) {
+				// If missing any of other required parameters, throw error
+				if (!primary_service_name || !propertiesArr) {
+					return errorHandler(`new_characteristic_missing_params`,null, characteristic_name);
+				}
+				// Check formatting of primary_service_name and throw error if improperly formatted
+				if (primary_service_name.constructor !== String || !primary_service_name.length){
+					return errorHandler(`improper_service_format`,null, primary_service_name);
+				}
+				// Check formatting of propertiesArr and throw error if improperly formatted
+				// TODO: Add validation and error handling for all properties in propertiesArr
+				if (propertiesArr.constuctor !== Array || !propertiesArr.length) {
+					return errorHandler(`improper_properties_format`,null, propertiesArr);
+				}
+				/**
+				* If all parameters are present and properly formatted add new object to
+				* bluetooth.gattCharacteristicsMapping and provide warning that added
+				* characteristic is not fully supported.
+				*/
+				console.warn(`Attempting to add ${characteristic_name}. Full support
+											for this characteristic is not provided.`);
+				bluetooth.gattCharacteristicsMapping[characteristic_name] = {
+					characteristic_name: {
+						primaryServices: [primary_service_name],
+						includedProperties: propertiesArr
+					},
+				}
+				// FIXME: What do we want to return here?
+				return true;
+			}
+		} // End addCharacteristic
+
+		/**
+		* Returns a cached characteristic or resolved characteristic after successful
+		* connection with device
+		*
+		* @param {String} characteristic_name - GATT characteristic name
+		* @return {Object} - If the method successfully retrieves the characteristic,
+		*											that characteristic is returned
+		*/
+		returnCharacteristic(characteristic_name) {
+			/**
+			* Check to see if characteristic exists in bluetooth.gattCharacteristicsMapping
+			* and throw error if not found.
+			*/
+			if(!bluetooth.gattCharacteristicsMapping[characteristic_name]) {
+				return errorHandler('characteristic_error', null, characteristic_name);
+			}
+			/**
+			* Retrieve characteristic object from bluetooth.gattCharacteristicsMapping
+			* and establish primary service
+			* FIXME: Consider characteristics that are children of multiple services
+			*/
+			 var characteristicObj = bluetooth.gattCharacteristicsMapping[characteristic_name];
+			 var primary_service_name = characteristicObj.primaryServices[0];
+			 /**
+				* Check to see if requested characteristic has been cached from a previous
+				* interaction of any type to characteristic_name and return if found
+				*/
+			 if (this.cache[primary_service_name][characteristic_name].cachedCharacteristic) {
+					 return this.cache[primary_service_name][characteristic_name].cachedCharacteristic;
+			 }
+			 /**
+				* Check to see if requested characteristic's parent primary service  has
+				* been cached from a any previous interaction with that primary service
+				*/
+			 else if (this.cache[primary_service_name].cachedService) {
+					/**
+					* If parent primary service has been cached, use getCharacteristic method
+					* on the cached service and cache resolved characteristic before returning
+					*/
+					this.cache[primary_service_name].cachedService.getCharacteristic(characteristic_name)
+					.then(characteristic => {
+						// Cache characteristic before returning characteristic
+						this.cache[primary_service_name][characteristic_name] = {'cachedCharacteristic': characteristic};
+						return characteristic;
+					})
+					.catch(err => {
+						return errorHandler('returnCharacteristic_error', err, characteristic_name);
+					});
+				}
+				/**
+				* If neither characteristic nor any parent primary service of that characteristic
+				* has been cached, use cached device server to access and cache both the
+				* characteristic and primary parent service before returning characteristic
+				*/
+				else {
+					return this.apiServer.getPrimaryService(primary_service_name)
+					.then(service => {
+						// Cache primary service before attempting to access characteristic
+						this.cache[primary_service_name] = {'cachedService': service};
+						return service.getCharacteristic(characteristic_name);
+					})
+					.then(characteristic => {
+						// Cache characteristic before returning characteristic
+						this.cache[primary_service_name][characteristic_name] = {'cachedCharacteristic': characteristic};
+						return characteristic;
+					})
+					.catch(err => {
+						return errorHandler('returnCharacteristic_error', err, characteristic_name);
+					});
+				}
+		} // End returnCharacteristic
+
+} // End Device constructor
+
 const Bluetooth = {
 	gattCharacteristicsMapping: {
 
@@ -339,7 +811,7 @@ const Bluetooth = {
 			includedProperties: ['read']
 		}
 		//environmental_sensing
-		//TODO: explore indications, writeAux, extProp and how to access
+		//FIXME: explore indications, writeAux, extProp and how to access
 		descriptor_value_changed: {
 			primaryServices: ['environmental_sensing'],
 			includedProperties: ['indicate', 'writeAux', 'extProp'],
@@ -643,301 +1115,49 @@ const Bluetooth = {
       'pulse_oximeter', 'reference_time_update', 'running_speed_and_cadence',
       'scan_parameters', 'tx_power', 'user_data', 'weight_scale'
     ],
-
-
-
-  /**
-	  * Calls navigator.bluetooth.requestDevice
-	  *
-	  *	@param {Object} filters Collection of filters for devices
-	  *					all filters are optional, but at least 1 is required
-	  *					.name {string}
-	  *					.namePrefix {string}
-	  *					.uuid {string}
-	  *					.services {array}
-	  *					.optionalServices {array} - defaults to all available services,
-	  *							use an empty array to get no optional services
-	  *
-	  * @return {Object} Returns a new instance of Device
-	  *
-	  */
-	acquire(filters) {
-
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/; // TODO: Add error for invalid U
-		const requestParams = {
-			filters: [],
-		};
-
-		if (filters) {
-			if (filters.name) requestParams.filters.push({ name: filters.name });
-			if (filters.namePrefix) requestParams.filters.push({ namePrefix: filters.namePrefix });
-			if (filters.uuid) requestParams.filters.push({ uuid: filters.uuid });
-			if (filters.services) requestParams.filters.push({ services: filters.services });
-			if (filters.optionalServices) requestParams.optionalServices = filters.optionalServices;
-			else requestParams.optionalServices = this.gattServiceList;
-		} else {
-			/*
-			* If no filters are passed in, throw error no_filters
-			*	TODO: Catch error for "user canceled request device chooser"
-			*					and "bluetooth not available"
-			*/
-			// errorHandler('no_filters'/*, Context Object */);
-		}
-
-		// return new Device(navigator.bluetooth.requestDevice(requestParams));
-		return navigator.bluetooth.requestDevice(requestParams).then(device => {
-			return new Device(device);
-		});
-	}
-
 }
 
-class Device {
-
-	constructor(requestParams) {
-		this.requestParams = requestParams;
-		this.apiDevice = null;
-		this.apiServer = null;
-		// this.connected = this.checkConnectionStatus();
+/**
+*
+*
+*/
+function errorHandler(error, nativeError, alternateParam) {
+	// Big object mapping error codes (keys) to error messages (values)
+	const errorMap = {
+		add_characteristic_exists_error: `Characteristic ${alternateParam} already exists.`,
+		characteristic_error: `Characteristic ${alternateParam} not found. Add ${alternateParam} to device using addCharacteristic or try another characteristic.`,
+		connect_gatt: `Error. Could not connect to GATT. Device might be out of range. Also check to see if filters are vaild.`,
+		connect_server: `Error. Could not connect to server on device.`,
+		connect_service: `Error. Could not find service.`,
+		disconnect_timeout: `Timed out. Could not disconnect.`,
+		disconnect_error: `Error. Could not disconnect from device.`,
+		improper_characteristic_format: `Error. ${alternateParam} is not a properly formatted characteristic.`,
+		improper_properties_format: `Error. ${alternateParam} is not a properly formatted properties array.`,
+		improper_service_format: `Error. ${alternateParam} is not a properly formatted service.`,
+    issue_disconnecting: `Issue disconnecting with device.`,
+		new_characteristic_missing_params: `Error. ${alternateParam} is not a fully supported characteristic. Please provide an associated primary service and at least one property.`,
+		no_device: `Error. No instance of device found.`,
+		no_filters: `No filters found on instance of Device. For more information, please visit http://sabertooth-io.github.io/#method-newdevice`,
+		no_read_property: `No read property on characteristic: ${alternateParam}.`,
+		no_write_property: `No write property on this characteristic.`,
+    not_connected: `Could not disconnect. Device not connected.`,
+		parsing_not_supported: `Parsing not supported for characterstic: ${alternateParam}.`,
+		postValue_error: `Error. Could not post value to device.`,
+		read_error: `Error. Cannot read value on the characteristic.`,
+		returnCharacteristic_error: `Error accessing characteristic ${alternateParam}.`,
+		start_notifications_error: `Error. Not able to read stream of data from characteristic: ${alternateParam}.`,
+		start_notifications_no_notify: `Error. No notify property found on this characteristic: ${alternateParam}.`,
+		stop_notifications_not_notifying: `Notifications not established for characteristic: ${alternateParam} or you have not started notifications.`,
+		stop_notifications_error: `Issue stopping notifications for characteristic: ${alternateParam} or you have not started notifications.`,
+		user_cancelled: `User cancelled the permission request.`,
+		uuid_error: `Error. Invalid UUID. For more information on proper formatting of UUIDs, visit https://webbluetoothcg.github.io/web-bluetooth/#uuids`,
+		write_error: `Error. Could not change value of characteristic: ${alternateParam}.`,
+    write_permissions: `Error. ${alternateParam} characteristic does not have a write property.`
 	}
-
-	/**
-		* checks apiDevice to see whether device is connected
-		*/
-	checkConnectionStatus() {
-		return this.apiDevice.gatt.connected;
-	}
-
-	/**
-		* Establishes a new GATT connection w/ the device
-		* 	and stores the return of the promise as this.apiServer
-		*
-		* FIXME: Does this.apiServer need to be a promise?
-		*		If so, set it to the promise returned by .gatt.connect(),
-		*		instead of setting it to the resolution in the .then callback.
-	  */
-	connect() {
-		const filters = this.requestParams;
-		const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/; // TODO: Add error for invalid U
-		const requestParams = {
-			filters: [],
-		};
-
-		if (filters) {
-			if (filters.name) requestParams.filters.push({ name: filters.name });
-			if (filters.namePrefix) requestParams.filters.push({ namePrefix: filters.namePrefix });
-			if (filters.uuid) requestParams.filters.push({ uuid: filters.uuid });
-			if (filters.services) requestParams.filters.push({ services: [filters.services] });
-			if (filters.optionalServices) requestParams.optionalServices = filters.optionalServices;
-			else requestParams.optionalServices = Bluetooth.gattServiceList;
-		} else {
-			/*
-			* If no filters are passed in, throw error no_filters
-			*	TODO: Catch error for "user canceled request device chooser"
-			*					and "bluetooth not available"
-			*/
-			// errorHandler('no_filters'/*, Context Object */);
-		}
-			return navigator.bluetooth.requestDevice(requestParams).then(device => {
-			this.apiDevice = device;
-			return device.gatt.connect()
-		})
-		.then(server => {
-			this.apiServer = server;
-			return server;
-		});
-		// TODO: Add error functionality
-	};
-
-	/**
-	 * Attempts to disconnect from BT device
-	 *
-	 * @Return {Boolean} successfully disconnected
-	 *					returns false after 3ms
-	 */
-	disconnect() {
-		/**
-        *Disconnect from device if the connected property in the bluetooth object
-        *evaluates to true.
-        */
-        if (this.apiServer.connected) {
-          this.apiServer.disconnect();
-          /**
-          *If the disconnect method is called while the connected property on the
-          *bluetooth object evaluates to true and the connected property in the bluetooth
-          *object evaluates to false after disconnect runs, then return the boolean value
-          *true to indicate that the disconnect was successful.
-          */
-          if (!this.apiServer.connected) {
-            return true;
-          }
-          /**
-          *If however, the connected property in the bluetooth object evaluates
-          *to true after the disconnect method ran, then display an error stating that there
-          *was a problem disconnecting with the device.
-          */
-          throw new Error('Issue disconnecting with device.');
-        }
-        /**
-        *If the disconnect method is called while the connected property in the
-        *bluetooth object is false, then display an error stating that the device
-        *is not connected.
-        */
-        throw new Error('Could not disconnect. Device not connected.');
-		// return new Promise((resolve, reject) => {
-		//
-		// 	// If not disconnected within 1 second, reject promise
-		// 	setTimeout(() => {
-		// 		if (this.connected) {
-		// 			// errorHandler('disconnect_timeout', {});
-		// 			return reject(false);	// TODO: does this cause an error if already resolved?
-		// 		} else {
-		// 			this.apiServer = null;
-		// 			return resolve(true);
-		// 		}
-		// 	}, 1000);
-		//
-		// 	/**
-		// 	 * If the device is connected, attempt to disconnect
-		// 	 * then immediately check if successful and resolve promise
-		// 	 */
-		// 	if (this.connected) {
-		// 		this.apiDevice.gatt.disconnect()
-		// 		.then(() => {
-		// 			if (!this.connected) {
-		// 				this.apiServer = null;
-		// 				return resolve(true);
-		// 			};
-		// 		})
-		// 		.catch(err => {
-		// 			// errorHandler('disconnect_error', {}, err);
-		// 		});
-		// 	}
-		// });
-	}
-
-	/**
-	 * Attempts to get characteristic value from BT device
-	 *
-	 * @param {string} GATT characteristic name
-	 * @return {Promise} A promise to the characteristic value
-	 *
-	 */
-	getValue(characteristicName) {
-		// TODO: add error handling for absent characteristics and characteristic properties
-		var characteristicObj = Bluetooth.gattCharacteristicsMapping[characteristicName];
-		var includedProperties = characteristicObj.includedProperties;
-		if (includedProperties.includes('read')){
-			/**
-			 * TODO: add functionality to map through all primary services
-			 *       to characteristic, if multiple exist e.g. 'sensor_location'...
-			 *       or add functionality at device connection to filter primary
-			 *       services based on only those available to device
-			 */
-			 // IF YOU'RE HAVING AN ISSUE READING A VALUE, IT'S PROBABLY BECAUSE THIS DOES NOT WORK ON CARLOS' COMPUTER SO STOP TRYING TO DEBUG THIS.
-			 // USE AARON'S COMPUTER
-			return this.apiServer.getPrimaryService(characteristicObj.primaryServices[0])
-			.then(service => {
-				return service.getCharacteristic(characteristicName);
-			})
-			.then(characteristic => {
-				return characteristic.readValue();
-			})
-			.then(value => {
-				var parsedValue = characteristicObj.parseValue(value);
-				parseValue.eventObj = value;
-				console.log('returned to developer at end of getValue fn: ', parsedValue);
-				return parsedValue;
-
-			})
-			.catch(err => {
-				console.log('error',err);
-				// errorHandler('disconnect_error', {}, err);
-			})
-		}
-		else {
-			// errorHandler('illegal action', {}, err);
-		}
-	} // end getValue
-
-	postValue(characteristicName, value){
-		var characteristicObj = Bluetooth.gattCharacteristicsMapping[characteristicName];
-		var includedProperties = characteristicObj.includedProperties;
-		if(includedProperties.includes('write')){
-			/**
-			 * TODO: add functionality to map through all primary services
-			 *       to characteristic, if multiple exist e.g. 'sensor_location'...
-			 *       or add functionality at device connection to filter primary
-			 *       services based on only those available to device
-			 */
-		 return this.apiServer.getPrimaryService(characteristicObj.primaryServices[0])
-			.then(service => {
-				console.log('service',service);
-				return service.getCharacteristic(characteristicName);
-			})
-			.then(characteristic => {
-				/**
-				*TODO: Add functionality to make sure that the values passed in are in the proper format,
-				*	   and are compatible with the writable device.
-				*/
-				var formattedValue = characteristicObj.prepValue(value);
-				return characteristic.writeValue(formattedValue);
-			})
-			.then(changedChar => {
-				console.log('changed characteristic:', changedChar);
-			})
-			.catch(err => {
-				console.log('error',err);
-				// errorHandler('disconnect_error', {}, err);
-			})
-		}
-		else {
-			// handle errors for incorrectly formatted data or whatnot.
-		}
-	} // end of postValue
-
-	/**
-	 * Attempts to start notifications for changes to BT device values and retrieve
-	 * updated values
-	 *
-	 * @param {string} GATT characteristic name
-	 * @return TODO: what does this return!?!
-	 *
-	 */
-	startNotifications(characteristicName, func){
-		var characteristicObj = Bluetooth.gattCharacteristicsMapping[characteristicName];
-		var includedProperties = characteristicObj.includedProperties;
-		if(includedProperties.includes('notify')){
-			/**
-			 * TODO: add functionality to map through all primary services
-			 *       to characteristic, if multiple exist e.g. 'sensor_location'...
-			 *       or add functionality at device connection to filter primary
-			 *       services based on only those available to device
-			 */
-		 return this.apiServer.getPrimaryService(characteristicObj.primaryServices[0])
-			.then(service => {
-				return service.getCharacteristic(characteristicName);
-			})
-			.then(characteristic => {
-				/**
-				*TODO: Add functionality to make sure that the values passed in are in the proper format,
-				*	   and are compatible with the writable device.
-				*/
-				return characteristic.startNotifications()
-				.then( () => {
-					// return characteristic;
-					return characteristic.addEventListener('characteristicvaluechanged', event => {
-				      func(event);
-				    });
-				})
-			})
-			.catch(err => {
-				console.log('error',err);
-				// errorHandler('disconnect_error', {}, err);
-			})
-		}
-		else {
-			// handle errors for incorrectly formatted data or whatnot.
-		}
-	} // end of postValue
+  if(nativeError) {
+    throw new Error(`${errorMap[error]} ${nativeError}`);
+  }
+  else {
+    throw new Error(errorMap[error]);
+  }
 }

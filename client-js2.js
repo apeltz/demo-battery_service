@@ -48,9 +48,11 @@ $('#getvalue').on('touchstart click', (event) => {
   var characteristic = $('#characteristic').val();
   blue.getValue(characteristic)
   .then(value => {
-    $('#level').text(`${value}%`);
+    for(var key in value){
+      $('#level').text(`${key}: ${value[key]}`);
+    }
     //percentage = value;
-    batteryFill(value);
+    // batteryFill(value);
   })
   .catch(error => {
     console.log('catched error', error);
@@ -59,9 +61,10 @@ $('#getvalue').on('touchstart click', (event) => {
 
 $('#startNotify').on('touchstart click', (event) => {
   var characteristic = $('#characteristic').val();
-  blue.startNotifications(characteristic, e =>{
-    var newHR = parseHeartRate(e.target.value);
-    $('#level').append(`<p>${newHR.heartRate}</p>`);
+  blue.startNotifications(characteristic, eObj =>{
+    for(var key in value){
+      $('#level').text(`${key}: ${value[key]}`);
+    }
   })
   // .then(value => {
   //   console.log('in returned promise...')
@@ -80,7 +83,7 @@ $('#startNotify').on('touchstart click', (event) => {
 $('#writeValue').on('touchstart click', (event) => {
   var characteristic = $('#characteristic').val();
   var value = $('#writeInteger').val();
-  blue.postValue(characteristic, value).then(e => {
+  blue.writeValue(characteristic, value).then(e => {
     console.log('returned from postValue promise: ', e);
 
   })
