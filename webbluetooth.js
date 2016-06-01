@@ -164,7 +164,7 @@ class Bluetoothdevice {
 				* is present, return an object with the returned value from readValue() as
 				* the only parameter.
 				*/
-				console.log('charObj.PV',characteristicObj.parseValue)
+				if(characteristicObj.parseValue) {console.log('charPV: ', characteristicObj.parseValue)}
 				let returnObj = characteristicObj.parseValue ? characteristicObj.parseValue(value):{};
 				// Always include the raw value returned from readValue() in the object returned
 				returnObj.rawValue = value;
