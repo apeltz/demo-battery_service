@@ -424,14 +424,14 @@ class Bluetoothdevice {
 				* Check to see if requested characteristic has been cached from a previous
 				* interaction of any type to characteristic_name and return if found
 				*/
-			 if (this.cache[primary_service_name][characteristic_name].cachedCharacteristic) {
+			 if (this.cache[primary_service_name] && this.cache[primary_service_name][characteristic_name].cachedCharacteristic) {
 					 return this.cache[primary_service_name][characteristic_name].cachedCharacteristic;
 			 }
 			 /**
 				* Check to see if requested characteristic's parent primary service  has
 				* been cached from a any previous interaction with that primary service
 				*/
-			 else if (this.cache[primary_service_name].cachedService) {
+			 else if (this.cache[primary_service_name] && this.cache[primary_service_name].cachedService) {
 					/**
 					* If parent primary service has been cached, use getCharacteristic method
 					* on the cached service and cache resolved characteristic before returning
