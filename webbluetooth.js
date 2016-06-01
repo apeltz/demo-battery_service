@@ -149,8 +149,9 @@ class Bluetoothdevice {
 			}
 		// Call returnCharacteristic to retrieve characteristic from which to read
 		// FIXME: Check bound context of 'this' here
-
-			this.returnCharacteristic(characteristic_name)
+			 return new Promise((resolve,reject)=>{
+				 return resolve(this.returnCharacteristic(characteristic_name))
+			 })
 			.then(characteristic =>{
 				return characteristic.readValue();
 			})
@@ -407,70 +408,67 @@ class Bluetoothdevice {
 		*											that characteristic is returned
 		*/
 		returnCharacteristic(characteristic_name) {
-			return new Promise((resolve, reject)=>{
-				/**
-				* Check to see if characteristic exists in bluetooth.gattCharacteristicsMapping
-				* and throw error if not found.
+			/**
+			* Check to see if characteristic exists in bluetooth.gattCharacteristicsMapping
+			* and throw error if not found.
+			*/
+			if(!bluetooth.gattCharacteristicsMapping[characteristic_name]) {
+				return errorHandler('characteristic_error', null, characteristic_name);
+			}
+			/**
+			* Retrieve characteristic object from bluetooth.gattCharacteristicsMapping
+			* and establish primary service
+			* FIXME: Consider characteristics that are children of multiple services
+			*/
+			 var characteristicObj = bluetooth.gattCharacteristicsMapping[characteristic_name];
+			 var primary_service_name = characteristicObj.primaryServices[0];
+			 /**
+				* Check to see if requested characteristic has been cached from a previous
+				* interaction of any type to characteristic_name and return if found
 				*/
-				if(!bluetooth.gattCharacteristicsMapping[characteristic_name]) {
-					return errorHandler('characteristic_error', null, characteristic_name);
+			 if (this.cache[primary_service_name] && this.cache[primary_service_name][characteristic_name].cachedCharacteristic) {
+					 return this.cache[primary_service_name][characteristic_name].cachedCharacteristic;
+			 }
+			 /**
+				* Check to see if requested characteristic's parent primary service  has
+				* been cached from a any previous interaction with that primary service
+				*/
+			 else if (this.cache[primary_service_name] && this.cache[primary_service_name].cachedService) {
+					/**
+					* If parent primary service has been cached, use getCharacteristic method
+					* on the cached service and cache resolved characteristic before returning
+					*/
+					this.cache[primary_service_name].cachedService.getCharacteristic(characteristic_name)
+					.then(characteristic => {
+						// Cache characteristic before returning characteristic
+						this.cache[primary_service_name][characteristic_name] = {'cachedCharacteristic': characteristic};
+						return characteristic;
+					})
+					.catch(err => {
+						return errorHandler('returnCharacteristic_error', err, characteristic_name);
+					});
 				}
 				/**
-				* Retrieve characteristic object from bluetooth.gattCharacteristicsMapping
-				* and establish primary service
-				* FIXME: Consider characteristics that are children of multiple services
+				* If neither characteristic nor any parent primary service of that characteristic
+				* has been cached, use cached device server to access and cache both the
+				* characteristic and primary parent service before returning characteristic
 				*/
-				 var characteristicObj = bluetooth.gattCharacteristicsMapping[characteristic_name];
-				 var primary_service_name = characteristicObj.primaryServices[0];
-				 /**
-					* Check to see if requested characteristic has been cached from a previous
-					* interaction of any type to characteristic_name and return if found
-					*/
-				 if (this.cache[primary_service_name] && this.cache[primary_service_name][characteristic_name].cachedCharacteristic) {
-						 return resolve(this.cache[primary_service_name][characteristic_name].cachedCharacteristic);
-				 }
-				 /**
-					* Check to see if requested characteristic's parent primary service  has
-					* been cached from a any previous interaction with that primary service
-					*/
-				 else if (this.cache[primary_service_name] && this.cache[primary_service_name].cachedService) {
-						/**
-						* If parent primary service has been cached, use getCharacteristic method
-						* on the cached service and cache resolved characteristic before returning
-						*/
-						this.cache[primary_service_name].cachedService.getCharacteristic(characteristic_name)
-						.then(characteristic => {
-							// Cache characteristic before returning characteristic
-							this.cache[primary_service_name][characteristic_name] = {'cachedCharacteristic': characteristic};
-							return resolve(characteristic);
-						})
-						.catch(err => {
-							return errorHandler('returnCharacteristic_error', err, characteristic_name);
-						});
-					}
-					/**
-					* If neither characteristic nor any parent primary service of that characteristic
-					* has been cached, use cached device server to access and cache both the
-					* characteristic and primary parent service before returning characteristic
-					*/
-					else {
-						return this.apiServer.getPrimaryService(primary_service_name)
-						.then(service => {
-							// Cache primary service before attempting to access characteristic
-							this.cache[primary_service_name] = {'cachedService': service};
-							return service.getCharacteristic(characteristic_name);
-						})
-						.then(characteristic => {
-							// Cache characteristic before returning characteristic
-							this.cache[primary_service_name][characteristic_name] = {'cachedCharacteristic': characteristic};
-							return resolve(characteristic);
-						})
-						.catch(err => {
-							return errorHandler('returnCharacteristic_error', err, characteristic_name);
-						});
-					}
-			})
-
+				else {
+					return this.apiServer.getPrimaryService(primary_service_name)
+					.then(service => {
+						// Cache primary service before attempting to access characteristic
+						this.cache[primary_service_name] = {'cachedService': service};
+						return service.getCharacteristic(characteristic_name);
+					})
+					.then(characteristic => {
+						// Cache characteristic before returning characteristic
+						this.cache[primary_service_name][characteristic_name] = {'cachedCharacteristic': characteristic};
+						return characteristic;
+					})
+					.catch(err => {
+						return errorHandler('returnCharacteristic_error', err, characteristic_name);
+					});
+				}
 		} // End returnCharacteristic
 
 } // End Device constructor
