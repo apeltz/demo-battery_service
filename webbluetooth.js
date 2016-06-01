@@ -397,7 +397,7 @@ class Bluetoothdevice {
 				bluetooth.gattCharacteristicsMapping[characteristic_name] = {
 						primaryServices: [primary_service_name],
 						includedProperties: propertiesArr
-					},
+					}
 				// FIXME: What do we want to return here?
 				return true;
 			}
