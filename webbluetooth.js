@@ -406,6 +406,7 @@ class Bluetoothdevice {
 		*											that characteristic is returned
 		*/
 		returnCharacteristic(characteristic_name) {
+			console.log('this.cache: ',this.cache)
 			/**
 			* Check to see if characteristic exists in bluetooth.gattCharacteristicsMapping
 			* and throw error if not found.
