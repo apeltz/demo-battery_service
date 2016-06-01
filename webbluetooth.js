@@ -1082,27 +1082,27 @@ const Bluetooth = {
 				return result;
 			}
 		},
-		csc_measurement: {
-			primaryServices: ['cycling_speed_and_cadence'],
-			includedProperties: ['notify'],
-			parseValue: value => {
-				value = value.buffer ? value : new DataView(value);
-
-				let flags = value.getUint8(0);
-				let wheelRevolution = flags & 0x1;
-				let crankRevolution = flags & 0x2;
-
-				let index = 1;
-
-				if(wheelRevolution) {
-					result.cumulative_wheel_revolutions =
-				}
-
-				let result = {};
-				result.tx_power_level = value.getInt8(0);
-				return result;
-			}
-		},
+		// csc_measurement: {
+		// 	primaryServices: ['cycling_speed_and_cadence'],
+		// 	includedProperties: ['notify'],
+		// 	parseValue: value => {
+		// 		value = value.buffer ? value : new DataView(value);
+		//
+		// 		let flags = value.getUint8(0);
+		// 		let wheelRevolution = flags & 0x1;
+		// 		let crankRevolution = flags & 0x2;
+		//
+		// 		let index = 1;
+		//
+		// 		if(wheelRevolution) {
+		// 			result.cumulative_wheel_revolutions =
+		// 		}
+		//
+		// 		let result = {};
+		// 		result.tx_power_level = value.getInt8(0);
+		// 		return result;
+		// 	}
+		// },
 	},
 	// all adopted services... passed in as argument to optional services filter
 	gattServiceList: ['alert_notification', 'automation_io', 'battery_service', 'blood_pressure',
