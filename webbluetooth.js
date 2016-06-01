@@ -470,7 +470,7 @@ class Bluetoothdevice {
 
 } // End Device constructor
 
-const Bluetooth = {
+const bluetooth = {
 	gattCharacteristicsMapping: {
 
 		// battery_level characteristic
