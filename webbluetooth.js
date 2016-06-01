@@ -164,7 +164,6 @@ class Bluetoothdevice {
 				* is present, return an object with the returned value from readValue() as
 				* the only parameter.
 				*/
-				if(characteristicObj.parseValue) {console.log('charPV: ', characteristicObj.parseValue)}
 				let returnObj = characteristicObj.parseValue ? characteristicObj.parseValue(value):{};
 				// Always include the raw value returned from readValue() in the object returned
 				returnObj.rawValue = value;
@@ -431,7 +430,10 @@ class Bluetoothdevice {
 			 /**
 				* Check to see if requested characteristic has been cached from a previous
 				* interaction of any type to characteristic_name and return if found
+				* FIXME: Fix to make sure characteristic is in cache before attempted to access
+				* cachedCharacteristic from it
 				*/
+				//
 			 if (this.cache[primary_service_name] && this.cache[primary_service_name][characteristic_name].cachedCharacteristic) {
 					 return this.cache[primary_service_name][characteristic_name].cachedCharacteristic;
 			 }
