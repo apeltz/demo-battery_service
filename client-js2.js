@@ -62,7 +62,7 @@ $('#getvalue').on('touchstart click', (event) => {
 $('#startNotify').on('touchstart click', (event) => {
   var characteristic = $('#characteristic').val();
   blue.startNotifications(characteristic, eObj =>{
-    for(var key in value){
+    for(var key in eObj){
       $('#level').append(`${key}: ${value[key]}`);
     }
   })
