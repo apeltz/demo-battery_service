@@ -49,7 +49,7 @@ $('#getvalue').on('touchstart click', (event) => {
   blue.getValue(characteristic)
   .then(value => {
     for(var key in value){
-      $('#level').text(`${key}: ${value[key]}`);
+      $('#level').append(`${key}: ${value[key]}`);
     }
     //percentage = value;
     // batteryFill(value);
@@ -63,7 +63,7 @@ $('#startNotify').on('touchstart click', (event) => {
   var characteristic = $('#characteristic').val();
   blue.startNotifications(characteristic, eObj =>{
     for(var key in value){
-      $('#level').text(`${key}: ${value[key]}`);
+      $('#level').append(`${key}: ${value[key]}`);
     }
   })
   // .then(value => {
