@@ -595,17 +595,17 @@ const Bluetooth = {
 				value = value.buffer ? value : new DataView(value);
 				let result = {};
 				let flags = value.getUint16(0);
-				let result.low_batteryDetectionSupported = flags & 0x1;
-				let result.sensor_malfunction_detection_supported = flags & 0x2;
-				let result.sensor_sample_size_supported = flags & 0x4;
-				let result.sensor_strip_insertion_error_detection_supported = flags & 0x8;
-				let result.sensor_strip_type_error_detection_supported = flags & 0x10;
-				let result.sensor_result_highLow_detection_supported = flags & 0x20;
-				let result.sensor_temperature_highLow_detection_supported = flags & 0x40;
-				let result.sensor_read_interruption_detection_supported = flags & 0x80;
-				let result.general_device_fault_supported = flags & 0x100;
-				let result.time_fault_supported = flags & 0x200;
-				let result.multiple_bond_supported = flags & 0x400;
+				result.low_battery_detection_supported = flags & 0x1;
+				result.sensor_malfunction_detection_supported = flags & 0x2;
+				result.sensor_sample_size_supported = flags & 0x4;
+				result.sensor_strip_insertion_error_detection_supported = flags & 0x8;
+				result.sensor_strip_type_error_detection_supported = flags & 0x10;
+				result.sensor_result_highLow_detection_supported = flags & 0x20;
+				result.sensor_temperature_highLow_detection_supported = flags & 0x40;
+				result.sensor_read_interruption_detection_supported = flags & 0x80;
+				result.general_device_fault_supported = flags & 0x100;
+				result.time_fault_supported = flags & 0x200;
+				result.multiple_bond_supported = flags & 0x400;
 				// Remaining flags reserved for future use
 				return result;
 			}
@@ -1057,9 +1057,9 @@ const Bluetooth = {
 				value = value.buffer ? value : new DataView(value);
 				let result = {};
 				let flags = value.getInt32(0);
-				let result.time_stamp_supported = flags & 0x1;
-				let result.multiple_sensors_supported = flags & 0x2;
-				let result.BMI_supported = flags & 0x4;
+				result.time_stamp_supported = flags & 0x1;
+				result.multiple_sensors_supported = flags & 0x2;
+				result.BMI_supported = flags & 0x4;
 				switch (flags & 0x78 >> 3) {
 					case 0: result.weight_measurement_resolution = 'Not specified';
 					case 1: result.weight_measurement_resolution = 'Resolution of 0.5 kg or 1 lb';
