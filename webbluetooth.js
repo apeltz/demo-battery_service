@@ -165,6 +165,7 @@ class Bluetoothdevice {
 				let returnObj = characteristicObj.parseValue ? characteristicObj.parseValue(value):{};
 				// Always include the raw value returned from readValue() in the object returned
 				returnObj.rawValue = value;
+				console.log('charObj: ', characteristicObj,'returnObj: ', returnObj)
 				return returnObj;
 			})
 			.catch(err => {
@@ -419,7 +420,6 @@ class Bluetoothdevice {
 			*/
 			 var characteristicObj = bluetooth.gattCharacteristicsMapping[characteristic_name];
 			 var primary_service_name = characteristicObj.primaryServices[0];
-			 console.log(characteristicObj, primary_service_name);
 			 /**
 				* Check to see if requested characteristic has been cached from a previous
 				* interaction of any type to characteristic_name and return if found
