@@ -135,6 +135,7 @@ class Bluetoothdevice {
 		}
 		// Retrieve characteristic object from bluetooth.gattCharacteristicsMapping
 		var characteristicObj = bluetooth.gattCharacteristicsMapping[characteristic_name];
+		console.log('charObj: ', characteristicObj)
 		/**
 		* Check characteristic object to see if support for read property is provided.
 		* If not provided, proceed with attempt to read value of characteristic but
