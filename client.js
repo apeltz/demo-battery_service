@@ -1,10 +1,5 @@
-var percentage = 30;
-// removed value assignment from blue at variable declaration
+const BluetoothDevice = require('web-bluetooth');
 var blue;
-
-// $(window).load(function() {
-//
-// });
 
 $('#connect').on('touchstart click', (event) => {
   var services = $('#serviceFilter').val();
@@ -15,7 +10,7 @@ $('#connect').on('touchstart click', (event) => {
   if (services) filterObj['services'] = services;
   if (name) filterObj['name'] = name;
   if (prefix) filterObj['namePrefix'] = prefix;
-  blue = new Bluetoothdevice(filterObj);
+  blue = new BluetoothDevice(filterObj);
   blue.connect().then(device => {
     $('#load').hide();
     $('#connect').hide();
