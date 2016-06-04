@@ -13,7 +13,7 @@
   "license": "ISC",
   "dependencies": {
     "express": "^4.13.4",
-    "web-bluetooth": "0.0.10"
+    "web-bluetooth": "0.0.13"
   },
   "devDependencies": {
     "babel-preset-es2015": "^6.9.0",
